@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <values.h>
 #include <time.h>
-#include <mpi.h>
+
 
 #include "defines.h"
 #include "faux_p.h"
@@ -63,44 +63,78 @@ int main (int argc, char *argv[])
   struct info_chips *chips;
   int	 **chip_coord;
 
-  float *grid, *grid_chips, *grid_aux;  
+  float *grid, *grid_chips_inicial,*grid_chips, *grid_aux;  
   struct info_results BT;
   
   int    conf, i;
-  struct timespec t0, t1;
+  double t0, t1;
   double tej, Tmean;
+
+  int npr,pid;
+
+  MPI_Init(&argc,&argv);
+  MPI_Comm_rank(MPI_COMM_WORLD,&pid);
+  MPI_Comm_size(MPI_COMM_WORLD,&npr);
 
  // reading initial data file
   if (argc != 2) {
     printf ("\n\nERROR: needs a card description file \n\n");
     exit (-1);
   } 
-
-  read_data (argv[1], &param, &chips, &chip_coord);
-
-  printf ("\n  ===================================================================");
-  printf ("\n    Thermal diffusion - SERIAL version ");
-  printf ("\n    %d x %d points, %d chips", RSIZE*param.scale, CSIZE*param.scale, param.nchip);
-  printf ("\n    T_ext = %1.1f, Tmax_chip = %1.1f, T_delta: %1.3f, Max_iter: %d", param.t_ext, param.tmax_chip, param.t_delta, param.max_iter);
-  printf ("\n  ===================================================================\n\n");
   
-  clock_gettime (CLOCK_REALTIME, &t0);
+  read_data (argv[1], &param, &chips, &chip_coord);
+  
+  if(pid==0){
+    printf ("\n  ===================================================================");
+    printf ("\n    Thermal diffusion - PARALEL version ");
+    printf ("\n    %d x %d points, %d chips", RSIZE*param.scale, CSIZE*param.scale, param.nchip);
+    printf ("\n    T_ext = %1.1f, Tmax_chip = %1.1f, T_delta: %1.3f, Max_iter: %d", param.t_ext, param.tmax_chip, param.t_delta, param.max_iter);
+    printf ("\n  ===================================================================\n\n");
+  }
+
+  t0=MPI_Wtime();  
 
   grid = malloc(NROW*NCOL * sizeof(float));
-  grid_chips = malloc(NROW*NCOL * sizeof(float));
+  grid_chips_inicial = malloc(NROW*NCOL * sizeof(float));
   grid_aux = malloc(NROW*NCOL * sizeof(float));
 
   BT.bgrid = malloc(NROW*NCOL * sizeof(float));
   BT.cgrid = malloc(NROW*NCOL * sizeof(float));
   BT.Tmean = MAXDOUBLE;
   
+  //crear tipo filas
+  MPI_Type_vector(NCOL-2,1,2,MPI_FLOAT,&fila);
+  MPI_Type_commit(&fila);
+  //reparto de filas
+  int base=(NROW-2)/npr,resto=(NROW-2)%npr;
+  int tamv[npr],desv[npr];
+  desv[0]=0;
+  if(resto!=0){
+    tamv[0]=base+1;
+  }
+  else{
+    tamv[0]=base;
+  }
+  for(i=1;i<npr;i++){
+    if(i<resto){
+      tamv[i]=base+1;
+    }
+    else{
+      tamv[i]=base;
+    }
+    desv[i]=desv[i-1]+tamv[i-1];
+  }
+  grid_chips = malloc(NCOL*(tamv[pid]+2) * sizeof(float));
   // loop to process chip configurations
   for (conf=0; conf<param.nconf; conf++)
   {
     // inintial values for grids
-    init_grid_chips (conf, param, chips, chip_coord, grid_chips);
+    if(pid==0){
+      init_grid_chips (conf, param, chips, chip_coord, grid_chips_inicial);
+    }
+    MPI_Scatterv(grid_chips_inicial,tamv,desv,MPI_FLOAT,&grid_chips[NCOL],tamv[pid],MPI_FLOAT,0,MPI_COMM_WORLD); //repartir filas  //TODO Quizas hacerlo Iscatterv
     init_grids (param, grid, grid_aux);
-
+//__________________________________________________________________________
     // main loop: thermal injection/disipation until convergence (t_delta or max_iter)
     Tmean = calculate_Tmean (param, grid, grid_chips, grid_aux);
     printf ("  Config: %2d    Tmean: %1.2f\n", conf + 1, Tmean);
@@ -109,15 +143,15 @@ int main (int argc, char *argv[])
     results_conf (conf, Tmean, param, grid, grid_chips, &BT);
   }
 
-  clock_gettime (CLOCK_REALTIME, &t1);
-  tej = (t1.tv_sec - t0.tv_sec) + (t1.tv_nsec - t0.tv_nsec)/(double)1e9;
+  t1=MPI_Wtime();
+  tej = t1 - t0;
   printf ("\n\n >>> Best configuration: %2d    Tmean: %1.2f\n", BT.conf + 1, BT.Tmean); 
-  printf ("   > Time (serial): %1.3f s \n\n", tej);
+  printf ("   > Time (paralel): %1.3f s \n\n", tej);
   // writing best configuration results
   results (param, &BT, argv[1]);
   
 
-  free (grid);free (grid_chips);free (grid_aux);
+  free (grid);free (grid_chips);free (grid_chips_inicial);free (grid_aux);
   free (BT.bgrid);free (BT.cgrid);
   free (chips);
   for (i=0; i<param.nconf; i++) free (chip_coord[i]);

@@ -2,7 +2,7 @@
  * defines.h 
  * definitions for the thermal simulation of the card
 ***********************************************************/ 
-
+#include <mpi.h>
 // minimal card and maximum size
 #define RSIZE 200
 #define CSIZE 100
@@ -29,3 +29,4 @@ struct info_results {
   float  *cgrid;   // initial grid (chips)
 };
 
+MPI_Datatype fila;

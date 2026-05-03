@@ -5,21 +5,24 @@
 
 
 /************************************************************************************/
-void thermal_update (struct info_param param, float *grid, float *grid_chips)
+void thermal_update (struct info_param param, float *grid, float *grid_chips, int tam, int des, int pid, int npr) //falta testearlo
 {
-  int i, j, a, b;
-
+  int i,i_chips, j, a, b;
+  
   // heat injection at chip positions
-  for (i=1; i<NROW-1; i++)
-  for (j=1; j<NCOL-1; j++) 
-    if (grid_chips[i*NCOL+j] > grid[i*NCOL+j])
-      grid[i*NCOL+j] += 0.05 * (grid_chips[i*NCOL+j] - grid[i*NCOL+j]);
+  for (i_chips=1; i_chips<tam; i_chips++){
+    i=i_chips+des;
+    for (j=1; j<NCOL-1; j++) 
+      if (grid_chips[i_chips*NCOL+j] > grid[i*NCOL+j])
+        grid[i*NCOL+j] += 0.05 * (grid_chips[i_chips*NCOL+j] - grid[i*NCOL+j]);
 
+  }
+  
   // air cooling at the middle of the card
   a = 0.45*(NCOL-2) + 1;
   b = 0.55*(NCOL-2) + 1;
 
-  for (i=1; i<NROW-1; i++)
+  for (i=des+1; i<des+tam+1; i++) //cambiar los indices
   for (j=a; j<b; j++)
       grid[i*NCOL+j] -= 0.01 * (grid[i*NCOL+j] - param.t_ext);
 }
@@ -30,8 +33,8 @@ double thermal_diffusion (struct info_param param, float *grid, float *grid_aux)
   int    i, j;
   double  T;
   double Tfull = 0.0;
-
-  for (i=1; i<NROW-1; i++)
+  //pedir/enviar las lineas necesarias
+  for (i=1; i<NROW-1; i++)//cambiar los indices
     for (j=1; j<NCOL-1; j++)
     {
       T = grid[i*NCOL+j] + 
@@ -43,16 +46,17 @@ double thermal_diffusion (struct info_param param, float *grid, float *grid_aux)
       Tfull += T;
     }
 
-    //new values for the grid
-    for (i=1; i<NROW-1; i++)
-    for (j=1; j<NCOL-1; j++)
-      grid[i*NCOL+j] = grid_aux[i*NCOL+j]; 
-
-    return (Tfull);
+  //new values for the grid
+  for (i=1; i<NROW-1; i++)//cambiar los indices
+  for (j=1; j<NCOL-1; j++)
+    grid[i*NCOL+j] = grid_aux[i*NCOL+j]; 
+  
+  //Allreduce de Tfull (suma)
+  return (Tfull);
 }
 
 /************************************************************************************/
-double calculate_Tmean (struct info_param param, float *grid, float *grid_chips, float *grid_aux)
+double calculate_Tmean (struct info_param param, float *grid, float *grid_chips, float *grid_aux) //En principio no veo necesario tocar nada para la version paralela
 {
   int    i, j, end, niter;
   double  Tfull;
