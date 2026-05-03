@@ -44,11 +44,11 @@ void init_grid_chips (int conf, struct info_param param, struct info_chips *chip
 }
 
 /************************************************************************************/
-void init_grids (struct info_param param, float *grid, float *grid_aux) //paralelizar, cada uno inicializa su parte
+void init_grids (struct info_param param, float *grid, float *grid_aux, int des, int tam) //paralelizar, cada uno inicializa su parte
 {
   int i, j;
 
-  for (i=0; i<NROW; i++)
+  for (i=des; i<des+tam+2; i++)
   for (j=0; j<NCOL; j++) 
     grid[i*NCOL+j] = grid_aux[i*NCOL+j] = param.t_ext;
 }
@@ -75,7 +75,7 @@ int main (int argc, char *argv[])
   MPI_Init(&argc,&argv);
   MPI_Comm_rank(MPI_COMM_WORLD,&pid);
   MPI_Comm_size(MPI_COMM_WORLD,&npr);
-
+  MPI_Request req;
  // reading initial data file
   if (argc != 2) {
     printf ("\n\nERROR: needs a card description file \n\n");
@@ -103,7 +103,7 @@ int main (int argc, char *argv[])
   BT.Tmean = MAXDOUBLE;
   
   //crear tipo filas
-  MPI_Type_vector(NCOL-2,1,2,MPI_FLOAT,&fila);
+  MPI_Type_contiguous(NCOL,MPI_FLOAT,&fila);
   MPI_Type_commit(&fila);
   //reparto de filas
   int base=(NROW-2)/npr,resto=(NROW-2)%npr;
@@ -123,8 +123,23 @@ int main (int argc, char *argv[])
       tamv[i]=base;
     }
     desv[i]=desv[i-1]+tamv[i-1];
-  }
+  }/*
+  if(pid==0){
+    printf("tamv= ");
+    for(i=0;i<npr;i++){
+      printf("%d ",tamv[i]);
+    
+    }
+    printf("\n");
+    printf("desv= ");
+    for(i=0;i<npr;i++){
+      printf("%d ",desv[i]);
+    }
+    printf("\n");
+  }*/
   grid_chips = malloc(NCOL*(tamv[pid]+2) * sizeof(float));
+
+  
   // loop to process chip configurations
   for (conf=0; conf<param.nconf; conf++)
   {
@@ -132,23 +147,29 @@ int main (int argc, char *argv[])
     if(pid==0){
       init_grid_chips (conf, param, chips, chip_coord, grid_chips_inicial);
     }
-    MPI_Scatterv(grid_chips_inicial,tamv,desv,MPI_FLOAT,&grid_chips[NCOL],tamv[pid],MPI_FLOAT,0,MPI_COMM_WORLD); //repartir filas  //TODO Quizas hacerlo Iscatterv
-    init_grids (param, grid, grid_aux);
-//__________________________________________________________________________
+    MPI_Iscatterv(grid_chips_inicial,tamv,desv,fila,&grid_chips[NCOL],tamv[pid],fila,0,MPI_COMM_WORLD,&req); //repartir filas  //TODO Quizas hacerlo Iscatterv para ir adelantando la inicializacion del grid
+    init_grids (param, grid, grid_aux,desv[pid],tamv[pid]);
     // main loop: thermal injection/disipation until convergence (t_delta or max_iter)
-    Tmean = calculate_Tmean (param, grid, grid_chips, grid_aux);
-    printf ("  Config: %2d    Tmean: %1.2f\n", conf + 1, Tmean);
-
-    // processing configuration results 
-    results_conf (conf, Tmean, param, grid, grid_chips, &BT);
+    MPI_Wait(&req,MPI_STATUS_IGNORE);
+    Tmean = calculate_Tmean (param, grid, grid_chips, grid_aux, tamv[pid], desv[pid], pid, npr);
+    MPI_Gatherv(&grid[NCOL],tamv[pid],fila,grid_aux,tamv,desv,fila,0,MPI_COMM_WORLD);
+    if(pid==0){
+      printf ("  Config: %2d    Tmean: %1.2f\n", conf + 1, Tmean);
+    
+      // processing configuration results 
+      results_conf (conf, Tmean, param, grid_aux, grid_chips_inicial, &BT);
+    }
   }
 
   t1=MPI_Wtime();
   tej = t1 - t0;
-  printf ("\n\n >>> Best configuration: %2d    Tmean: %1.2f\n", BT.conf + 1, BT.Tmean); 
-  printf ("   > Time (paralel): %1.3f s \n\n", tej);
-  // writing best configuration results
-  results (param, &BT, argv[1]);
+  if(pid==0){
+    printf ("\n\n >>> Best configuration: %2d    Tmean: %1.2f\n", BT.conf + 1, BT.Tmean); 
+    printf ("   > Time (paralel): %1.3f s \n\n", tej);
+    // writing best configuration results
+    results (param, &BT, argv[1]);
+  }
+  
   
 
   free (grid);free (grid_chips);free (grid_chips_inicial);free (grid_aux);
@@ -156,7 +177,8 @@ int main (int argc, char *argv[])
   free (chips);
   for (i=0; i<param.nconf; i++) free (chip_coord[i]);
   free (chip_coord);
-
+  MPI_Type_free(&fila);
+  MPI_Finalize();
   return (0);
 }
 

@@ -118,15 +118,3 @@ void results (struct info_param param, struct info_results *BT, char *finput)
 
   fclose (fd);
 }
-
-void intercambio_filas(int pid, int npr){
-  if(pid==0){
-   // MPI_Sendrecv(,);
-  }
-  else if(pid==npr-1){
-
-  }
-  else{
-
-  }
-}

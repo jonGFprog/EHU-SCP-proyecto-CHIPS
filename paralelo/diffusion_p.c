@@ -10,14 +10,14 @@ void thermal_update (struct info_param param, float *grid, float *grid_chips, in
   int i,i_chips, j, a, b;
   
   // heat injection at chip positions
-  for (i_chips=1; i_chips<tam; i_chips++){
+  for (i_chips=1; i_chips<tam+1; i_chips++){
     i=i_chips+des;
     for (j=1; j<NCOL-1; j++) 
       if (grid_chips[i_chips*NCOL+j] > grid[i*NCOL+j])
         grid[i*NCOL+j] += 0.05 * (grid_chips[i_chips*NCOL+j] - grid[i*NCOL+j]);
 
   }
-  
+
   // air cooling at the middle of the card
   a = 0.45*(NCOL-2) + 1;
   b = 0.55*(NCOL-2) + 1;
@@ -28,13 +28,23 @@ void thermal_update (struct info_param param, float *grid, float *grid_chips, in
 }
 
 /************************************************************************************/
-double thermal_diffusion (struct info_param param, float *grid, float *grid_aux)
+double thermal_diffusion (struct info_param param, float *grid, float *grid_aux, int tam, int des, int pid, int npr)
 {
   int    i, j;
   double  T;
-  double Tfull = 0.0;
+  double Tfull = 0.0, Tfull_loc=0.0;
   //pedir/enviar las lineas necesarias
-  for (i=1; i<NROW-1; i++)//cambiar los indices
+  if(pid==0){ //Seguramente cambiar a ISends + Recvs
+    MPI_Sendrecv(&grid[NCOL*(tam+des)],1,fila,pid+1,0,&grid[NCOL*(tam+des+1)],1,fila,pid+1,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE); //Es posible que de problemas por usar el mismo buffer, si eso cambiar
+  }
+  else if(pid==npr-1){
+    MPI_Sendrecv(&grid[NCOL*(des+1)],1,fila,pid-1,0,&grid[NCOL*(des)],1,fila,pid-1,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+  }
+  else{
+    MPI_Sendrecv(&grid[NCOL*(tam+des)],1,fila,pid+1,0,&grid[NCOL*(tam+des+1)],1,fila,pid+1,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+    MPI_Sendrecv(&grid[NCOL*(des+1)],1,fila,pid-1,0,&grid[NCOL*(des)],1,fila,pid-1,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+  }
+  for (i=des+1; i<des+tam+1; i++)//cambiar los indices
     for (j=1; j<NCOL-1; j++)
     {
       T = grid[i*NCOL+j] + 
@@ -43,20 +53,21 @@ double thermal_diffusion (struct info_param param, float *grid, float *grid_aux)
                   - 8*grid[i*NCOL+j]);
 
       grid_aux[i*NCOL+j] = T;
-      Tfull += T;
+      Tfull_loc += T;
     }
 
   //new values for the grid
-  for (i=1; i<NROW-1; i++)//cambiar los indices
+  for (i=des+1; i<des+tam+1; i++)//cambiar los indices
   for (j=1; j<NCOL-1; j++)
     grid[i*NCOL+j] = grid_aux[i*NCOL+j]; 
   
   //Allreduce de Tfull (suma)
+  MPI_Allreduce(&Tfull_loc,&Tfull,1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
   return (Tfull);
 }
 
 /************************************************************************************/
-double calculate_Tmean (struct info_param param, float *grid, float *grid_chips, float *grid_aux) //En principio no veo necesario tocar nada para la version paralela
+double calculate_Tmean (struct info_param param, float *grid, float *grid_chips, float *grid_aux, int tam, int des, int pid, int npr) //En principio no veo necesario tocar nada para la version paralela
 {
   int    i, j, end, niter;
   double  Tfull;
@@ -70,12 +81,11 @@ double calculate_Tmean (struct info_param param, float *grid, float *grid_chips,
     Tmean = 0.0;
 
     // heat injection and air cooling 
-    thermal_update (param, grid, grid_chips);
- 
-    // thermal diffusion
-    Tfull = thermal_diffusion(param, grid, grid_aux);
+    thermal_update (param, grid, grid_chips, tam, des, pid, npr);
     
-
+    // thermal diffusion
+    Tfull = thermal_diffusion(param, grid, grid_aux, tam, des, pid, npr);
+  
     // convergence every 10 iterations
     if (niter % 10 == 0)
     {
@@ -85,7 +95,9 @@ double calculate_Tmean (struct info_param param, float *grid, float *grid_chips,
       else Tmean0 = Tmean;
     }
   } // end while 
-  printf ("Iter (ser): %d\t", niter);
+  if(pid==0){
+    printf ("Iter (par): %d\t", niter);
+  }
   return (Tmean);
 }
 
