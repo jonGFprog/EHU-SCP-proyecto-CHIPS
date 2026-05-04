@@ -1,7 +1,7 @@
 /**********************************************************
- * defines.h 
+ * defines.h
  * definitions for the thermal simulation of the card
-***********************************************************/ 
+***********************************************************/
 
 // minimal card and maximum size
 #define RSIZE 200
@@ -28,4 +28,3 @@ struct info_results {
   float  *bgrid;   // final grid
   float  *cgrid;   // initial grid (chips)
 };
-
