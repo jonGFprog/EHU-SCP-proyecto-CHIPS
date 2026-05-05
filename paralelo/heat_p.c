@@ -147,7 +147,7 @@ int main (int argc, char *argv[])
     if(pid==0){
       init_grid_chips (conf, param, chips, chip_coord, grid_chips_inicial);
     }
-    MPI_Iscatterv(grid_chips_inicial,tamv,desv,fila,&grid_chips[NCOL],tamv[pid],fila,0,MPI_COMM_WORLD,&req); //repartir filas  //TODO Quizas hacerlo Iscatterv para ir adelantando la inicializacion del grid
+    MPI_Iscatterv(&grid_chips_inicial[NCOL],tamv,desv,fila,&grid_chips[NCOL],tamv[pid],fila,0,MPI_COMM_WORLD,&req); //repartir filas  //TODO Quizas hacerlo Iscatterv para ir adelantando la inicializacion del grid
     init_grids (param, grid, grid_aux,desv[pid],tamv[pid]);
     // main loop: thermal injection/disipation until convergence (t_delta or max_iter)
     MPI_Wait(&req,MPI_STATUS_IGNORE);

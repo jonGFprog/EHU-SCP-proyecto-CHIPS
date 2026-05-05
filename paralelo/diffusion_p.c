@@ -33,29 +33,118 @@ double thermal_diffusion (struct info_param param, float *grid, float *grid_aux,
   int    i, j;
   double  T;
   double Tfull = 0.0, Tfull_loc=0.0;
+  MPI_Request req1,req2;
   //pedir/enviar las lineas necesarias
   if(pid==0){ //Seguramente cambiar a ISends + Recvs
-    MPI_Sendrecv(&grid[NCOL*(tam+des)],1,fila,pid+1,0,&grid[NCOL*(tam+des+1)],1,fila,pid+1,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE); //Es posible que de problemas por usar el mismo buffer, si eso cambiar
+    MPI_Isend(&grid[NCOL*(tam+des)],1,fila,pid+1,0,MPI_COMM_WORLD,&req1);
+    MPI_Irecv(&grid[NCOL*(tam+des+1)],1,fila,pid+1,0,MPI_COMM_WORLD,&req2);
+    //MPI_Sendrecv(&grid[NCOL*(tam+des)],1,fila,pid+1,0,&grid[NCOL*(tam+des+1)],1,fila,pid+1,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE); //Es posible que de problemas por usar el mismo buffer, si eso cambiar
   }
   else if(pid==npr-1){
-    MPI_Sendrecv(&grid[NCOL*(des+1)],1,fila,pid-1,0,&grid[NCOL*(des)],1,fila,pid-1,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+    MPI_Isend(&grid[NCOL*(des+1)],1,fila,pid-1,0,MPI_COMM_WORLD,&req1);
+    MPI_Irecv(&grid[NCOL*(des)],1,fila,pid-1,0,MPI_COMM_WORLD,&req1);
+    
+    //MPI_Sendrecv(&grid[NCOL*(des+1)],1,fila,pid-1,0,&grid[NCOL*(des)],1,fila,pid-1,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
   }
   else{
-    MPI_Sendrecv(&grid[NCOL*(tam+des)],1,fila,pid+1,0,&grid[NCOL*(tam+des+1)],1,fila,pid+1,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
-    MPI_Sendrecv(&grid[NCOL*(des+1)],1,fila,pid-1,0,&grid[NCOL*(des)],1,fila,pid-1,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+    MPI_Isend(&grid[NCOL*(tam+des)],1,fila,pid+1,0,MPI_COMM_WORLD,&req1);
+    MPI_Irecv(&grid[NCOL*(tam+des+1)],1,fila,pid+1,0,MPI_COMM_WORLD,&req2);
+    MPI_Isend(&grid[NCOL*(des+1)],1,fila,pid-1,0,MPI_COMM_WORLD,&req1);
+    MPI_Irecv(&grid[NCOL*(des)],1,fila,pid-1,0,MPI_COMM_WORLD,&req1);
+
+    //MPI_Sendrecv(&grid[NCOL*(tam+des)],1,fila,pid+1,0,&grid[NCOL*(tam+des+1)],1,fila,pid+1,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+    //MPI_Sendrecv(&grid[NCOL*(des+1)],1,fila,pid-1,0,&grid[NCOL*(des)],1,fila,pid-1,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
   }
-  for (i=des+1; i<des+tam+1; i++)//cambiar los indices
+  for (i=des+2; i<des+tam; i++)//no procesa ni la primera ni la ultima fila 
+  {
     for (j=1; j<NCOL-1; j++)
     {
       T = grid[i*NCOL+j] + 
           0.10 * (grid[(i+1)*NCOL+j]   + grid[(i-1)*NCOL+j]   + grid[i*NCOL+(j+1)]     + grid[i*NCOL+(j-1)] + 
                   grid[(i+1)*NCOL+j+1] + grid[(i-1)*NCOL+j+1] + grid[(i+1)*NCOL+(j-1)] + grid[(i-1)*NCOL+(j-1)] 
                   - 8*grid[i*NCOL+j]);
-
-      grid_aux[i*NCOL+j] = T;
+       grid_aux[i*NCOL+j] = T;
       Tfull_loc += T;
     }
+  }
+  if(pid==0){ 
+    i=des+1;
+    for (j=1; j<NCOL-1; j++)
+      {
+        T = grid[i*NCOL+j] + 
+            0.10 * (grid[(i+1)*NCOL+j]   + grid[(i-1)*NCOL+j]   + grid[i*NCOL+(j+1)]     + grid[i*NCOL+(j-1)] + 
+                    grid[(i+1)*NCOL+j+1] + grid[(i-1)*NCOL+j+1] + grid[(i+1)*NCOL+(j-1)] + grid[(i-1)*NCOL+(j-1)] 
+                    - 8*grid[i*NCOL+j]);
 
+        grid_aux[i*NCOL+j] = T;
+        Tfull_loc += T;
+      }
+    MPI_Wait(&req2,MPI_STATUS_IGNORE);
+    i=des+tam;
+    for (j=1; j<NCOL-1; j++)
+      {
+        T = grid[i*NCOL+j] + 
+            0.10 * (grid[(i+1)*NCOL+j]   + grid[(i-1)*NCOL+j]   + grid[i*NCOL+(j+1)]     + grid[i*NCOL+(j-1)] + 
+                    grid[(i+1)*NCOL+j+1] + grid[(i-1)*NCOL+j+1] + grid[(i+1)*NCOL+(j-1)] + grid[(i-1)*NCOL+(j-1)] 
+                    - 8*grid[i*NCOL+j]);
+
+        grid_aux[i*NCOL+j] = T;
+        Tfull_loc += T;
+      }
+  }
+  else if(pid==npr-1){ 
+    //MPI_Wait(&req2,MPI_STATUS_IGNORE);
+    i=des+tam;
+    for (j=1; j<NCOL-1; j++)
+      {
+        T = grid[i*NCOL+j] + 
+            0.10 * (grid[(i+1)*NCOL+j]   + grid[(i-1)*NCOL+j]   + grid[i*NCOL+(j+1)]     + grid[i*NCOL+(j-1)] + 
+                    grid[(i+1)*NCOL+j+1] + grid[(i-1)*NCOL+j+1] + grid[(i+1)*NCOL+(j-1)] + grid[(i-1)*NCOL+(j-1)] 
+                    - 8*grid[i*NCOL+j]);
+
+        grid_aux[i*NCOL+j] = T;
+        Tfull_loc += T;
+      }
+    MPI_Wait(&req1,MPI_STATUS_IGNORE);
+    i=des+1;
+    for (j=1; j<NCOL-1; j++)
+      {
+        T = grid[i*NCOL+j] + 
+            0.10 * (grid[(i+1)*NCOL+j]   + grid[(i-1)*NCOL+j]   + grid[i*NCOL+(j+1)]     + grid[i*NCOL+(j-1)] + 
+                    grid[(i+1)*NCOL+j+1] + grid[(i-1)*NCOL+j+1] + grid[(i+1)*NCOL+(j-1)] + grid[(i-1)*NCOL+(j-1)] 
+                    - 8*grid[i*NCOL+j]);
+
+        grid_aux[i*NCOL+j] = T;
+        Tfull_loc += T;
+      }
+    
+  }
+  else{
+    MPI_Wait(&req1,MPI_STATUS_IGNORE);
+    i=des+1;
+    for (j=1; j<NCOL-1; j++)
+      {
+        T = grid[i*NCOL+j] + 
+            0.10 * (grid[(i+1)*NCOL+j]   + grid[(i-1)*NCOL+j]   + grid[i*NCOL+(j+1)]     + grid[i*NCOL+(j-1)] + 
+                    grid[(i+1)*NCOL+j+1] + grid[(i-1)*NCOL+j+1] + grid[(i+1)*NCOL+(j-1)] + grid[(i-1)*NCOL+(j-1)] 
+                    - 8*grid[i*NCOL+j]);
+
+        grid_aux[i*NCOL+j] = T;
+        Tfull_loc += T;
+      }
+    MPI_Wait(&req2,MPI_STATUS_IGNORE);
+    i=des+tam;
+    for (j=1; j<NCOL-1; j++)
+      {
+        T = grid[i*NCOL+j] + 
+            0.10 * (grid[(i+1)*NCOL+j]   + grid[(i-1)*NCOL+j]   + grid[i*NCOL+(j+1)]     + grid[i*NCOL+(j-1)] + 
+                    grid[(i+1)*NCOL+j+1] + grid[(i-1)*NCOL+j+1] + grid[(i+1)*NCOL+(j-1)] + grid[(i-1)*NCOL+(j-1)] 
+                    - 8*grid[i*NCOL+j]);
+
+        grid_aux[i*NCOL+j] = T;
+        Tfull_loc += T;
+      }
+  }
   //new values for the grid
   for (i=des+1; i<des+tam+1; i++)//cambiar los indices
   for (j=1; j<NCOL-1; j++)
