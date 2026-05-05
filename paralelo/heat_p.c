@@ -44,10 +44,10 @@ void init_grid_chips (int conf, struct info_param param, struct info_chips *chip
 }
 
 /************************************************************************************/
-void init_grids_parallel (struct info_param param, float *grid, float *grid_aux, int tam) //paralelizar, cada uno inicializa su parte
+void init_grids_parallel (struct info_param param, float *grid, float *grid_aux, int tam_loc) //paralelizar, cada uno inicializa su parte
 {
   int i,j;
-  for (i = 0; i<tam; i++)
+  for (i = 0; i<tam_loc; i++)
   for (j=0; j<NCOL; j++)
     grid[i*NCOL+j] = grid_aux[i*NCOL+j] = param.t_ext;
 }
