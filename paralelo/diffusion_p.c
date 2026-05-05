@@ -82,30 +82,30 @@ double calculate_Tmean (struct info_param param, float *grid, float *grid_chips,
     if (pid % 2 == 0) {
         if (pid != npr-1) { // Si el par NO es el último proceso
             // Envío mi última fila (tam_loc) y recibo en mi fantasma inferior (tam_loc + 1)
-            MPI_Ssend(&grid_local[tam_loc * NCOL], NCOL, MPI_FLOAT, pid + 1, 0, MPI_COMM_WORLD);
-            MPI_Recv(&grid_local[(tam_loc + 1) * NCOL], NCOL, MPI_FLOAT, pid + 1, 1, MPI_COMM_WORLD, &info);
+            MPI_Ssend(&grid[tam_loc * NCOL], NCOL, MPI_FLOAT, pid + 1, 0, MPI_COMM_WORLD);
+            MPI_Recv(&grid[(tam_loc + 1) * NCOL], NCOL, MPI_FLOAT, pid + 1, 1, MPI_COMM_WORLD, &info);
         }
     }
     //impares a sus anteriores
     else {
         // Los impares reciben del par de arriba y luego le contestan
-        MPI_Recv(&grid_local[0 * NCOL], NCOL, MPI_FLOAT, pid - 1, 0, MPI_COMM_WORLD, &info);
-        MPI_Ssend(&grid_local[1 * NCOL], NCOL, MPI_FLOAT, pid - 1, 1, MPI_COMM_WORLD);
+        MPI_Recv(&grid[0 * NCOL], NCOL, MPI_FLOAT, pid - 1, 0, MPI_COMM_WORLD, &info);
+        MPI_Ssend(&grid[1 * NCOL], NCOL, MPI_FLOAT, pid - 1, 1, MPI_COMM_WORLD);
     }
     //impares a sus siguientes
     if (pid % 2 != 0) {
         if (pid != npr-1) { // Si el impar NO es el último proceso
             // Envío mi última fila (tam_loc) y recibo en mi inferior (tam_loc + 1)
-            MPI_Ssend(&grid_local[tam_loc * NCOL], NCOL, MPI_FLOAT, pid + 1, 2, MPI_COMM_WORLD);
-            MPI_Recv(&grid_local[(tam_loc + 1) * NCOL], NCOL, MPI_FLOAT, pid + 1, 3, MPI_COMM_WORLD, &info);
+            MPI_Ssend(&grid[tam_loc * NCOL], NCOL, MPI_FLOAT, pid + 1, 2, MPI_COMM_WORLD);
+            MPI_Recv(&grid[(tam_loc + 1) * NCOL], NCOL, MPI_FLOAT, pid + 1, 3, MPI_COMM_WORLD, &info);
         }
     }
     //pares a sus anteriores
     else {
         if (pid > 0) { // Si el par NO es el proceso 0 entonces envia a su anterior
             // Los pares ahora miran hacia arriba, reciben del impar y le contestan
-            MPI_Recv(&grid_local[0 * NCOL], NCOL, MPI_FLOAT, pid - 1, 2, MPI_COMM_WORLD, &info);
-            MPI_Ssend(&grid_local[1 * NCOL], NCOL, MPI_FLOAT, pid - 1, 3, MPI_COMM_WORLD);
+            MPI_Recv(&grid[0 * NCOL], NCOL, MPI_FLOAT, pid - 1, 2, MPI_COMM_WORLD, &info);
+            MPI_Ssend(&grid[1 * NCOL], NCOL, MPI_FLOAT, pid - 1, 3, MPI_COMM_WORLD);
         }
     }
 
