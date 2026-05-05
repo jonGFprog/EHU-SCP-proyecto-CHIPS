@@ -77,11 +77,14 @@ int main (int argc, char *argv[])
   int    conf, i;
   double t0, t1;
   double tej, Tmean;
+
+  const int N_VECINOS = 2;
   int pid, npr;
-
-
-
-
+  MPI_Status info;
+  int tam_loc,tmean_loc;
+  int base, resto;
+  int * dist_gath,* tam,* dist;
+  float * grid_local,* grid_chips_local,* grid_aux_local;
 
 
 
@@ -108,99 +111,92 @@ int main (int argc, char *argv[])
 
   //enviamos los datos cargados, cargar los datos tarda tiempo, asi nos lo ahorramos para el resto de procesos.
   MPI_Bcast(&param, sizeof(param), MPI_CHAR, 0, MPI_COMM_WORLD);
-  MPI_Bcast(&chips, sizeof(chips), MPI_CHAR, 0, MPI_COMM_WORLD);
-  MPI_Bcast(&chip_coord, sizeof(chip_coord), MPI_CHAR, 0, MPI_COMM_WORLD);
 
 //clock_gettime (CLOCK_REALTIME, &t0);
 t0 = MPI_Wtime ();
 
 //calculo del numero de filas que tiene que procesar cada procesador
-    int tam_loc,tmean_loc;
-    int * tam = malloc(npr * sizeof(int));
-    int * dist = malloc(npr * sizeof(int));
-    int base =  (NROW-2)/npr;
-    int resto = (NROW-2) % npr;
+    base =  (NROW-2)/npr;
+    resto = (NROW-2) % npr;
 
     tam_loc = base;
     if (pid<resto) tam_loc++;
 
-    const int N_VECINOS = 2;
 
-    float * grid_local = malloc((base + N_VECINOS) * NCOL * sizeof(float));
-    float * grid_chips_local = malloc((base + N_VECINOS) * NCOL * sizeof(float));
-    float * grid_aux_local = malloc((base + N_VECINOS) * NCOL * sizeof(float));
+    grid_local = malloc((tam_loc + N_VECINOS) * NCOL * sizeof(float));
+    grid_chips_local = malloc((tam_loc + N_VECINOS) * NCOL * sizeof(float));
+    grid_aux_local = malloc((tam_loc + N_VECINOS) * NCOL * sizeof(float));
 
     if (pid == 0) {
+        tam = malloc(npr * sizeof(int));
+        dist = malloc(npr * sizeof(int));
+        dist_gath = malloc(npr * sizeof(int));
         for (i=0; i<npr;  i++){
-        tam[i] = base;
-        if (i < resto ) tam[i]++;
-        if (i==0) dis[i] = 0;
-        else dis[i] = dis[i-1]+tam[i-1];
+            tam[i] = base;
+            if (i < resto ) tam[i]++;
+            if (i==0){
+                dist[i] = 0;
+                dist_gath[i] = 1 * NCOL;
+            }
+            else {
+                dis[i] = dis[i-1]+tam[i-1];
+                dist_gath[i] = dist_gath[i-1] + tam[i-1];
+            }
         }
 
-        //TODO pid 0 tiene que mandar los datos de grid_chips a los demas procesos, tiene que separar todo en filas y mandar las respectivas filas a sus procesos.
+            grid = malloc(NROW*NCOL * sizeof(float));
+            grid_chips = malloc(NROW*NCOL * sizeof(float));
+            grid_aux = malloc(NROW*NCOL * sizeof(float));
 
-        grid = malloc(NROW*NCOL * sizeof(float));
-        grid_chips = malloc(NROW*NCOL * sizeof(float));
-        grid_aux = malloc(NROW*NCOL * sizeof(float));
-        for (conf=0; conf<param.nconf; conf++)
-        {
-            init_grid_chips(conf, param, grid_chips, chip_coord, grid_chips);
-            //mando los datos de cada fila de chips a su respectivo proceso
-            MPI_Scatterv(&grid_chips[dis[pid]*NCOL], tam[pid]*NCOL, MPI_FLOAT, &grid_chips_local[0][0], tam[pid]*NCOL, MPI_FLOAT, 0, MPI_COMM_WORLD, &info);
-
-        }
-    }
-    else {
-        for (conf=0; conf<param.nconf; conf++)
-        {
-            //inicializa sus matrices locales
-            init_grids (param, grid_local, grid_aux_local);
-            //recibe los datos de los chips desde el proceso 0
-            MPI_Recv (&grid_chips_local[0][0], tam[pid]*NCOL, MPI_FLOAT, 0, 0,MPI_COMM_WORLD, &info);
-            //procesa la simulacion localmente
-
-        }
+            BT.bgrid = malloc(NROW*NCOL * sizeof(float));
+            BT.cgrid = malloc(NROW*NCOL * sizeof(float));
+            BT.Tmean = MAXDOUBLE;
     }
 
-
-
-
-    BT.bgrid = malloc(NROW*NCOL * sizeof(float));
-    BT.cgrid = malloc(NROW*NCOL * sizeof(float));
-    BT.Tmean = MAXDOUBLE;
-
-    // loop to process chip configurations
     for (conf=0; conf<param.nconf; conf++)
-    {
-        // inintial values for grids
-        init_grid_chips (conf, param, chips, chip_coord, grid_chips);
-        init_grids (param, grid, grid_aux);
+        {
+            if (pid==0){
+                init_grid_chips(conf, param, grid_chips, chip_coord, grid_chips);
+            }
+            init_grids (param, grid_local, grid_aux_local,tam_loc + N_VECINOS);
+            for (j = 0; j < NCOL; j++) {
+                    grid_chips_local[0 * NCOL + j] = param.t_ext;
+                    grid_chips_local[(tam_loc + 1) * NCOL + j] = param.t_ext;
+            }
+            MPI_Scatterv(&grid_chips[dis[pid]*NCOL], tam[pid]*NCOL, MPI_FLOAT,
+                &grid_chips_local[1* NCOL], tam[pid]*NCOL, MPI_FLOAT, 0, MPI_COMM_WORLD);
+            //inicializa sus matrices locales
+            //recibe los datos de los chips desde el proceso 0
+            //procesa la simulacion localmente
+            tmean_loc = calculate_Tmean (param, grid_local, grid_chips_local, grid_aux_local, tam_loc, pid, npr,info);
 
-        // main loop: thermal injection/disipation until convergence (t_delta or max_iter)
-        Tmean = calculate_Tmean (param, grid, grid_chips, grid_aux);
-        printf ("  Config: %2d    Tmean: %1.2f\n", conf + 1, Tmean);
+            MPI_Gatherv(&grid_local[1 * NCOL], tam_loc * NCOL, MPI_FLOAT,grid, tam,
+                dist_gath, MPI_FLOAT, 0, MPI_COMM_WORLD);
 
-        // processing configuration results
-        results_conf (conf, Tmean, param, grid, grid_chips, &BT);
+            //Guardar mejor resultado
+            if (pid == 0) {
+                printf("  Config: %2d    Tmean: %1.2f\n", conf + 1, Tmean);
+                results_conf(conf, Tmean, param, grid, grid_chips, &BT);
+            }
+        }
     }
 
-
-
-    t1 = MPI_Wtime ();
+  t1 = MPI_Wtime ();
   //clock_gettime (CLOCK_REALTIME, &t1);
+  if(pid==0){
+      tej = (t1 - t0) + (t1 - t0)/(double)1e9;
+      printf ("\n\n >>> Best configuration: %2d    Tmean: %1.2f\n", BT.conf + 1, BT.Tmean);
+      //printf ("   > Time (parallel): %1.3f s \n\n", tej);
+      // writing best configuration results
+      results (param, &BT, argv[1]);
 
-  tej = (t1 - t0) + (t1 - t0)/(double)1e9;
-  printf ("\n\n >>> Best configuration: %2d    Tmean: %1.2f\n", BT.conf + 1, BT.Tmean);
-  //printf ("   > Time (parallel): %1.3f s \n\n", tej);
-  // writing best configuration results
-  results (param, &BT, argv[1]);
-
-
-  free (grid);free (grid_chips);free (grid_aux);
-  free (BT.bgrid);free (BT.cgrid);
+    free (grid);free (grid_chips);free (grid_aux);
+    free (BT.bgrid);free (BT.cgrid);
+    free (dist_gath);free (tam);
+    for (i=0; i<param.nconf; i++) free (chip_coord[i]);
+  }
+  free (grid_local);free (grid_chips_local);free (grid_aux_local);
   free (chips);
-  for (i=0; i<param.nconf; i++) free (chip_coord[i]);
   free (chip_coord);
 
   return (0);
