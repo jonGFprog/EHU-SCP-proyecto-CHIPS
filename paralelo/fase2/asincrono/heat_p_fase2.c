@@ -32,6 +32,7 @@
 #define TAG_RESULT 1 // Resultados procesados + proceso libre
 #define TAG_WORK 2 // Nueva configuracion
 #define TAG_STOP 3 // Señal de stop para todos los procesos
+#define TAG_BEST 4 //señal de mejor resultado
 
 
 /************************************************************************************/
@@ -99,7 +100,6 @@ int main (int argc, char *argv[])
     MPI_Init (&argc, &argv);
     MPI_Comm_size (MPI_COMM_WORLD, &npr);
     MPI_Comm_rank (MPI_COMM_WORLD, &pid);
-    printf("%d",argc);
     if (argc != 3) {
             if (pid == 0) printf ("\n\nERROR: Uso: %s <archivo_tarjeta> <tam_grupo_P>\n\n", argv[0]);
             MPI_Finalize();
@@ -159,7 +159,7 @@ int main (int argc, char *argv[])
     t0 = MPI_Wtime ();
 
 
-    if (pid==0){
+    if (pid == 0) {
         grid = malloc(NROW*NCOL * sizeof(float));
         grid_chips = malloc(NROW*NCOL * sizeof(float));
 
@@ -167,7 +167,7 @@ int main (int argc, char *argv[])
         BT.cgrid = malloc(NROW*NCOL * sizeof(float));
         BT.Tmean = MAXDOUBLE;
     }
-    else {
+    if (pid != 0) {
         // calculo del numero de filas que tiene que procesar cada procesador
         base =  (NROW-2)/local_npr;
         resto = (NROW-2) % local_npr;
@@ -200,43 +200,141 @@ int main (int argc, char *argv[])
         conf = 0; //conf actual
         int jefe_grupo, rec_tag, conf_finalizadas = 0;
         int grupos_activos = n_groups;
+        int mejor_grupo = -1;
         double tmean_recibido;
         MPI_Status status;
+        int tmp_val = -1;
+        float mejor_tmean = 100000; //numero alto (temeperatura imposible)
+        int conf_terminada;
+        int conf_asignada[npr];
 
         while (grupos_activos > 0) {
-            MPI_Recv(&tmean_recibido, 1, MPI_FLOAT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+            double tmean_recibido;
+
+            MPI_Recv(&tmean_recibido, 1, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
             jefe_grupo = status.MPI_SOURCE;
             rec_tag = status.MPI_TAG;
             //init_grid_chips(conf, param, chips, chip_coord, grid_chips);
 
-            //si lo recibido es un dato de resultado, lo procesamos y actualizamos el contador
+            //si lo recibido es un dato de resultado, lo procesamos, guardamos el emisor, el dato y la conf y actualizamos el contador
             if (rec_tag == TAG_RESULT){
                 conf_finalizadas++;
+                conf_terminada = conf_asignada[jefe_grupo];
+                printf("  Config: %2d    Tmean: %1.2f\n", conf_terminada + 1, tmean_recibido);
+
+                if (tmean_recibido < BT.Tmean) {
+                    mejor_grupo = jefe_grupo;
+                    BT.Tmean = tmean_recibido;
+                    BT.conf = conf_terminada;
+                }
             }
             //si necesitan nueva configuracion y quedan configuraciones las enviamos
             if ((rec_tag == TAG_RESULT || rec_tag == TAG_READY) && conf < param.nconf) {
-                MPI_Send(conf, 1, MPI_INT, jefe_grupo, TAG_WORK, MPI_COMM_WORLD);
+                conf_asignada[jefe_grupo] = conf;
+                MPI_Send(&conf, 1, MPI_INT, jefe_grupo, TAG_WORK, MPI_COMM_WORLD);
                 conf++;
             }
             //si ya no quedan configuraciones las detenemos
             else if (conf >= param.nconf){
-                int tmp_val = -1;
                 MPI_Send(&tmp_val, 1, MPI_INT, jefe_grupo, TAG_STOP, MPI_COMM_WORLD);
                 grupos_activos--;
             }
+        }
+        int orden_ganador = 1;
+        int orden_perdedor = 0;
 
+        // Avisamos a TODOS los grupos de si deben mandar datos o detenerse
+        for (i = 1; i <= n_groups; i++) {
+            int pid_jefe_actual = (i - 1) * P + 1;
+            if (pid_jefe_actual == mejor_grupo) {
+                MPI_Send(&orden_ganador, 1, MPI_INT, pid_jefe_actual, TAG_BEST, MPI_COMM_WORLD);
+            } else {
+                MPI_Send(&orden_perdedor, 1, MPI_INT, pid_jefe_actual, TAG_BEST, MPI_COMM_WORLD);
+            }
         }
+        //Recibimos las matrices bgrid y cgrid para results
+        MPI_Recv(BT.bgrid, NROW * NCOL, MPI_FLOAT, mejor_grupo, TAG_BEST, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Recv(BT.cgrid, NROW * NCOL, MPI_FLOAT, mejor_grupo, TAG_BEST, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     }
-    else
-        {
-            /**
+    else{
             int mi_conf;
-            double mi_tmean = -1.0; // Mensaje inicial falso para decir "estoy listo para recibir trabajo"
-            // Estructura para guardar la mejor configuración LOCAL de este grupo
-            struct info_results BT_local
-            */
+            double mi_tmean = 0.0;
+            int tag_envio = TAG_READY;
+            MPI_Status status_worker;
+
+            struct info_results BT_local;
+            BT_local.Tmean = 100000;
+
+            if (local_pid == 0) {
+                BT_local.bgrid = malloc(NROW * NCOL * sizeof(float));
+                BT_local.cgrid = malloc(NROW * NCOL * sizeof(float));
+                grid_chips = malloc(NROW * NCOL * sizeof(float));
+                grid = malloc(NROW * NCOL * sizeof(float));
+            }
+
+            while (1) {
+                if (local_pid == 0) {
+                    MPI_Send(&mi_tmean, 1, MPI_DOUBLE, 0, tag_envio, MPI_COMM_WORLD);
+                    MPI_Recv(&mi_conf, 1, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status_worker);
+
+                    if (status_worker.MPI_TAG == TAG_STOP) {
+                        mi_conf = -1;
+                    }
+                }
+                MPI_Bcast(&mi_conf, 1, MPI_INT, 0, comm_group);
+
+                if (mi_conf == -1) {
+                    break;
+                }
+
+                if (local_pid == 0) {
+                    init_grid_chips(mi_conf, param, chips, chip_coord, grid_chips);
+                }
+
+                init_grids_parallel (param, grid_local, grid_aux_local, tam_loc + N_VECINOS);
+
+                for (i = 0; i < NCOL; i++) {
+                    grid_chips_local[0 * NCOL + i] = param.t_ext;
+                    grid_chips_local[(tam_loc + 1) * NCOL + i] = param.t_ext;
+                }
+
+                MPI_Scatterv(grid_chips, tam, dist, MPI_FLOAT,
+                             &grid_chips_local[1 * NCOL], tam_loc * NCOL, MPI_FLOAT, 0, comm_group);
+
+                mi_tmean = calculate_Tmean (param, grid_local, grid_chips_local, grid_aux_local, tam_loc, local_pid, local_npr, info, comm_group);
+
+                MPI_Gatherv(&grid_local[1 * NCOL], tam_loc * NCOL, MPI_FLOAT,
+                            grid, tam, dist, MPI_FLOAT, 0, comm_group);
+
+                if (local_pid == 0) {
+                    if (mi_tmean < BT_local.Tmean) {
+                        BT_local.Tmean = mi_tmean;
+                        BT_local.conf = mi_conf;
+
+                        memcpy(BT_local.bgrid, grid, NROW * NCOL * sizeof(float));
+                        memcpy(BT_local.cgrid, grid_chips, NROW * NCOL * sizeof(float));
+                    }
+                    tag_envio = TAG_RESULT;
+                }
+            } // Fin del while
+
+            if (local_pid == 0) {
+                int orden;
+                MPI_Recv(&orden, 1, MPI_INT, 0, TAG_BEST, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+                if (orden == 1) {
+                    // CORRECCIÓN 1: Faltaba enviar la configuración para evitar Deadlock
+                    MPI_Send(&BT_local.conf, 1, MPI_INT, 0, TAG_BEST, MPI_COMM_WORLD);
+
+                    MPI_Send(BT_local.bgrid, NROW * NCOL, MPI_FLOAT, 0, TAG_BEST, MPI_COMM_WORLD);
+                    MPI_Send(BT_local.cgrid, NROW * NCOL, MPI_FLOAT, 0, TAG_BEST, MPI_COMM_WORLD);
+                }
+                free(BT_local.bgrid);
+                free(BT_local.cgrid);
+                free(grid_chips);
+                free(grid);
+            }
         }
-    }
 
 
 
@@ -258,24 +356,36 @@ int main (int argc, char *argv[])
 
 
 
-    if(pid==0){
-        tej = t1 - t0;
-        printf ("\n\n >>> Best configuration: %2d    Tmean: %1.2f\n", BT.conf + 1, BT.Tmean);
-        printf ("   > Time (parallel): %1.3f s \n\n", tej);
+    if (pid == 0) {
+            tej = t1 - t0;
+            // Escribimos los resultados en el archivo
+            results (param, &BT, argv[1]);
+            printf ("   > Time (parallel): %1.3f s \n\n", tej);
 
-        // writing best configuration results
-        results (param, &BT, argv[1]);
+            free (grid);
+            free (grid_chips);
+            free (BT.bgrid);
+            free (BT.cgrid);
 
-        free (grid); free (grid_chips); free (grid_aux);
-        free (BT.bgrid); free (BT.cgrid);
-        free (tam);
-        free (dist);
-        for (i=0; i<param.nconf; i++) free (chip_coord[i]);
-        free (chips);
-        free (chip_coord);
+            for (i=0; i<param.nconf; i++) free (chip_coord[i]);
+            free (chips);
+            free (chip_coord);
+
+        } else {
+            free (grid_local);
+            free (grid_chips_local);
+            free (grid_aux_local);
+
+            for (i=0; i<param.nconf; i++) free (chip_coord[i]);
+            free (chips);
+            free (chip_coord);
+
+            if (local_pid == 0) {
+                free (tam);
+                free (dist);
+            }
+        }
+
+        MPI_Finalize ();
+        return (0);
     }
-
-    free (grid_local); free (grid_chips_local); free (grid_aux_local);
-    MPI_Finalize ();
-    return (0);
-}
