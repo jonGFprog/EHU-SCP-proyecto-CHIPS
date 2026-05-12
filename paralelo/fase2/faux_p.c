@@ -73,22 +73,6 @@ void results_conf (int conf, double Tmean, struct info_param param, float *grid,
 
 }
 
-void results_comp(struct info_param param,struct info_results *BT1,struct info_results *BT2){
-  int    i, j;
-  
-  if (BT2->Tmean > BT1->Tmean) 
-  {
-    BT1->Tmean = BT2->Tmean;
-    BT1->conf = BT2->conf;
-    for (i=1; i<NROW-1; i++)
-    for (j=1; j<NCOL-1; j++) 
-    {
-      BT1->bgrid[i*NCOL+j] = BT2->bgrid[i*NCOL+j];
-      BT1->cgrid[i*NCOL+j] = BT2->cgrid[i*NCOL+j];
-    }
-  } 
-  
-}
 
 /************************************************************************************/
 void fprint_grid (FILE *fd, float *grid, struct info_param param)

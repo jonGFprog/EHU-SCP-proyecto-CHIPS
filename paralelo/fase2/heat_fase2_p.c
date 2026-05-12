@@ -71,7 +71,7 @@ int main (int argc, char *argv[])
     struct info_chips *chips;
     int     **chip_coord;
 
-    float *grid, *grid_chips, *grid_aux;
+    float *grid, *grid_chips;//, *grid_aux;
     struct info_results BT;
 
     int    conf, i;
@@ -175,6 +175,10 @@ int main (int argc, char *argv[])
         BT.cgrid = malloc(NROW*NCOL * sizeof(float));
         BT.Tmean = MAXDOUBLE;
     }
+    if(pid==0){
+        BT.bgrid = malloc(NROW*NCOL * sizeof(float));
+        BT.cgrid = malloc(NROW*NCOL * sizeof(float));
+    }
     if(pid!=0){
         chips = (struct info_chips *) malloc (param.nchip * sizeof(struct info_chips));
     }
@@ -184,14 +188,19 @@ int main (int argc, char *argv[])
     char sol='s';
     int fin=1;
     MPI_Status status; 
-    int chip_coord_loc[2*param.nchip];
+    int tam_buf=sizeof(int)*2*param.nchip+sizeof(int);
+    char buf[tam_buf];
+    int pos=0; 
     
     if(pid==0){
         MPI_Request req; 
         for (conf=0; conf<param.nconf; conf++){ // pid 0 dar a cada grupo una configuracion segun vayan solicitandolas.
             MPI_Recv(&sol,1,MPI_CHAR,MPI_ANY_SOURCE,MPI_ANY_TAG,lideres,&status);
-            //TODO empaquetar el numero de la configuracion y chip_coord[conf]
-            MPI_Isend(chip_coord[conf],2 * param.nchip,MPI_INT,status.MPI_SOURCE,0,lideres,&req);
+            //Empaquetamos el numero de la configuracion y chip_coord[conf]
+            MPI_Pack(&conf,1,MPI_INT,buf,tam_buf,&pos,lideres);
+            MPI_Pack(chip_coord[conf],2 * param.nchip,MPI_INT,buf,tam_buf,&pos,lideres);
+            MPI_Send(buf,tam_buf,MPI_PACKED,status.MPI_SOURCE,19,lideres);
+            pos=0;
            // printf("enviao conf %d a pid_lideres %d",conf,pid_lideres);
         }
         for(i=0;i<ngroups;i++){
@@ -200,9 +209,9 @@ int main (int argc, char *argv[])
     }else{ 
         fin=0;
         int tag=-1;
-        
+        int chip_coord_loc[2*param.nchip];
         while(!fin){
-            
+            pos=0;
             if(pid_grupo==0){
                 //printf("??? pid_grupo %d pid_lideres %d\n",pid_grupo,pid_lideres);
                 MPI_Send(&sol,1,MPI_CHAR,0,0,lideres);
@@ -212,7 +221,9 @@ int main (int argc, char *argv[])
                     tag=12;
                 }
                 else{
-                    MPI_Recv(&chip_coord_loc,2*param.nchip,MPI_INT,0,0,lideres,&status);
+                    MPI_Recv(buf,tam_buf,MPI_PACKED,0,19,lideres,&status);
+                    MPI_Unpack(buf,tam_buf,&pos,&conf,1,MPI_INT,lideres);
+                    MPI_Unpack(buf,tam_buf,&pos,chip_coord_loc,2 * param.nchip,MPI_INT,lideres);
                     tag=0;
                 }          
             }
@@ -248,12 +259,44 @@ int main (int argc, char *argv[])
                 }        
             }
         }
-        
-        //TODO mirar cual es el mejor BT
-
+    }        
+    
+    int tam_bufBT=NROW*NCOL * sizeof(float)*2 +sizeof(double)+sizeof(int);
+    char bufBT[tam_bufBT];
+    pos=0;
+    if(pid==0){
+        double Tmeans[ngroups];
+        int min=0;
+        for(i=0;i<ngroups;i++){
+            MPI_Probe(MPI_ANY_SOURCE,16,lideres,&status);
+            MPI_Recv(&Tmeans[status.MPI_SOURCE-1],1,MPI_DOUBLE,status.MPI_SOURCE,16,lideres,&status);
+        }
+        for(i=1;i<ngroups;i++){
+            if(Tmeans[min]>Tmeans[i]){
+                min=i;
+            }
+        }
+        for(i=0;i<ngroups;i++){
+            MPI_Send(&min,1,MPI_INT,i+1,1,lideres);
+        }
+        MPI_Recv(bufBT,tam_bufBT,MPI_PACKED,min+1,2,lideres,&status);
+        MPI_Unpack(bufBT,tam_bufBT,&pos,&BT.conf,1,MPI_INT,lideres);
+        MPI_Unpack(bufBT,tam_bufBT,&pos,&BT.Tmean,1,MPI_DOUBLE,lideres);
+        MPI_Unpack(bufBT,tam_bufBT,&pos,BT.bgrid,NROW*NCOL,MPI_FLOAT,lideres);
+        MPI_Unpack(bufBT,tam_bufBT,&pos,BT.cgrid,NROW*NCOL,MPI_FLOAT,lideres);
+    }else if(pid_lideres>0){
+        int min;
+        MPI_Send(&BT.Tmean,1,MPI_DOUBLE,0,16,lideres);
+        MPI_Recv(&min,1,MPI_INT,0,1,lideres,&status);
+        if(min+1==pid_lideres){
+            MPI_Pack(&BT.conf,1,MPI_INT,bufBT,tam_bufBT,&pos,lideres);
+            MPI_Pack(&BT.Tmean,1,MPI_DOUBLE,bufBT,tam_bufBT,&pos,lideres);
+            MPI_Pack(BT.bgrid,NROW*NCOL,MPI_FLOAT,bufBT,tam_bufBT,&pos,lideres);
+            MPI_Pack(BT.cgrid,NROW*NCOL,MPI_FLOAT,bufBT,tam_bufBT,&pos,lideres);
+            MPI_Send(bufBT,tam_bufBT,MPI_PACKED,0,2,lideres);
+            //enviar todos los datos de BT
+        }
     }
-      MPI_Finalize(); //BORRAR AL TERMINAR LA PARTE ANTERIOR
-      exit(0);
     t1 = MPI_Wtime ();
 
     if(pid==0){
@@ -263,17 +306,30 @@ int main (int argc, char *argv[])
 
         // writing best configuration results
         results (param, &BT, argv[1]);
+        free(BT.bgrid);
+        free(BT.cgrid);
+        for (i = 0; i < param.nconf; i++)
+            free(chip_coord[i]);
+        free(chip_coord);
+        free(chips);
+    } else {
+        /* procesos distintos de 0: liberar sus datos locales */
+        free(grid_local);
+        free(grid_chips_local);
+        free(grid_aux_local);
+        free(chips);        /* todos los pid != 0 reservaron chips */
 
-        free (grid); free (grid_chips); //free (grid_aux);
-        free (BT.bgrid); free (BT.cgrid);
-        free (tam);
-        free (dist);
-        for (i=0; i<param.nconf; i++) free (chip_coord[i]);
-        free (chips);
-        free (chip_coord);
+        /* si este proceso es la raíz de un grupo, liberar las estructuras del grupo */
+        if (pid_grupo == 0) {
+            free(grid);
+            free(grid_chips);
+            free(BT.bgrid);
+            free(BT.cgrid);
+            free(tam);
+            free(dist);
+        }
     }
 
-    free (grid_local); free (grid_chips_local); free (grid_aux_local);
-    MPI_Finalize ();
-    return (0);
+    MPI_Finalize();
+    return 0;
 }
