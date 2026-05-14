@@ -115,7 +115,6 @@ double calculate_Tmean (struct info_param param, float *grid, float *grid_chips,
             end = 1;
         else Tmean0 = Tmean;
     }
-} // end while
-  if (pid == 0) printf ("Iter (par): %d\t", niter);
+}
   return (Tmean);
 }

@@ -323,8 +323,6 @@ int main (int argc, char *argv[])
                 MPI_Recv(&orden, 1, MPI_INT, 0, TAG_BEST, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
                 if (orden == 1) {
-                    // CORRECCIÓN 1: Faltaba enviar la configuración para evitar Deadlock
-                    MPI_Send(&BT_local.conf, 1, MPI_INT, 0, TAG_BEST, MPI_COMM_WORLD);
 
                     MPI_Send(BT_local.bgrid, NROW * NCOL, MPI_FLOAT, 0, TAG_BEST, MPI_COMM_WORLD);
                     MPI_Send(BT_local.cgrid, NROW * NCOL, MPI_FLOAT, 0, TAG_BEST, MPI_COMM_WORLD);
