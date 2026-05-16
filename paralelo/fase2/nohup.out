@@ -1,0 +1,141 @@
+Iniciando pruebas de rendimiento (Punto Dulce P=16, Límite: 120 procesos)...
+Probando Asincrono con 17 procesos (P=16, N=1)... Hecho.
+Probando Jon con 17 procesos (P=16, N=1)... 
+[ERROR FATAL DE MPI]:
+--------------------------------------------------------------------------
+mpirun was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: ./jon/ejecutable
+Node: nodo-0-16
+
+while attempting to start process rank 4.
+--------------------------------------------------------------------------
+17 total processes failed to start
+
+
+[ERROR FATAL DE MPI]:
+--------------------------------------------------------------------------
+mpirun was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: ./jon/ejecutable
+Node: nodo-0-17
+
+while attempting to start process rank 5.
+--------------------------------------------------------------------------
+17 total processes failed to start
+
+
+[ERROR FATAL DE MPI]:
+--------------------------------------------------------------------------
+mpirun was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: ./jon/ejecutable
+Node: nodo-0-16
+
+while attempting to start process rank 4.
+--------------------------------------------------------------------------
+17 total processes failed to start
+
+Hecho.
+Probando Asincrono con 33 procesos (P=16, N=2)... Hecho.
+Probando Jon con 33 procesos (P=16, N=2)... 
+[ERROR FATAL DE MPI]:
+--------------------------------------------------------------------------
+mpirun was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: ./jon/ejecutable
+Node: nodo-0-15
+
+while attempting to start process rank 3.
+--------------------------------------------------------------------------
+33 total processes failed to start
+
+
+[ERROR FATAL DE MPI]:
+--------------------------------------------------------------------------
+mpirun was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: ./jon/ejecutable
+Node: nodo-0-17
+
+while attempting to start process rank 5.
+--------------------------------------------------------------------------
+33 total processes failed to start
+
+
+[ERROR FATAL DE MPI]:
+--------------------------------------------------------------------------
+mpirun was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: ./jon/ejecutable
+Node: nodo-0-15
+
+while attempting to start process rank 3.
+--------------------------------------------------------------------------
+33 total processes failed to start
+
+Hecho.
+Probando Asincrono con 49 procesos (P=16, N=3)... Hecho.
+Probando Jon con 49 procesos (P=16, N=3)... 
+[ERROR FATAL DE MPI]:
+--------------------------------------------------------------------------
+mpirun was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: ./jon/ejecutable
+Node: nodo-0-24
+
+while attempting to start process rank 12.
+--------------------------------------------------------------------------
+49 total processes failed to start
+
+
+[ERROR FATAL DE MPI]:
+--------------------------------------------------------------------------
+mpirun was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: ./jon/ejecutable
+Node: nodo-0-24
+
+while attempting to start process rank 12.
+--------------------------------------------------------------------------
+49 total processes failed to start
+
+
+[ERROR FATAL DE MPI]:
+--------------------------------------------------------------------------
+mpirun was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: ./jon/ejecutable
+Node: nodo-0-17
+
+while attempting to start process rank 5.
+--------------------------------------------------------------------------
+49 total processes failed to start
+
+Hecho.
+Probando Asincrono con 65 procesos (P=16, N=4)... Iniciando pruebas de rendimiento (Punto Dulce P=16, Límite: 120 procesos)...
+Probando Asincrono con 17 procesos (P=16, N=1)... Hecho.
+Probando Jon con 17 procesos (P=16, N=1)... Hecho.
+Probando Asincrono con 33 procesos (P=16, N=2)... Hecho.
+Probando Jon con 33 procesos (P=16, N=2)... Hecho.
+Probando Asincrono con 49 procesos (P=16, N=3)... Hecho.
+Probando Jon con 49 procesos (P=16, N=3)... Hecho.
+Probando Asincrono con 65 procesos (P=16, N=4)... Hecho.
+Probando Jon con 65 procesos (P=16, N=4)... Hecho.
+Probando Asincrono con 81 procesos (P=16, N=5)... Hecho.
+Probando Jon con 81 procesos (P=16, N=5)... Hecho.
+Probando Asincrono con 97 procesos (P=16, N=6)... Hecho.
+Probando Jon con 97 procesos (P=16, N=6)... Hecho.
+Probando Asincrono con 113 procesos (P=16, N=7)... Hecho.
+Probando Jon con 113 procesos (P=16, N=7)... Hecho.
+
+Pruebas finalizadas. Resultados guardados en: comparativa_rendimiento_p16.csv
