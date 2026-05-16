@@ -1,2 +1,4 @@
 *.chips
 *.res
+*.log
+*bin
