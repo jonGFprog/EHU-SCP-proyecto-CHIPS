@@ -16,6 +16,7 @@ void thermal_update (struct info_param param, float *grid, float *grid_chips)
       grid[i*NCOL+j] += 0.05 * (grid_chips[i*NCOL+j] - grid[i*NCOL+j]);
 
   // air cooling at the middle of the card
+
   a = 0.45*(NCOL-2) + 1;
   b = 0.55*(NCOL-2) + 1;
 

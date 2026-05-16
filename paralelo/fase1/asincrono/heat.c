@@ -25,8 +25,8 @@
 #include <mpi.h>
 
 #include "defines.h"
-#include "faux_p.h"
-#include "diffusion_p.h"
+#include "faux.h"
+#include "diffusion.h"
 
 /************************************************************************************/
 void init_grid_chips (int conf, struct info_param param, struct info_chips *chips, int **chip_coord, float *grid_chips) //no paralelizar, uno inicializa y reparte

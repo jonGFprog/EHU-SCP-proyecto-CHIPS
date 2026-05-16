@@ -1,0 +1,722 @@
+> T Resultados Fase2 Ivan
+> T 17 procesos grupos de 4
+
+  ===================================================================
+    Thermal diffusion - parallel version 
+    npr = 17, groups = 4, processors by group = 4
+    2000 x 1000 points, 4 chips
+    T_ext = 20.0, Tmax_chip = 160.0, T_delta: 0.010, Max_iter: 10000
+  ===================================================================
+
+  Config:  2    Tmean: 52.94
+  Config:  1    Tmean: 52.82
+  Config:  3    Tmean: 53.91
+  Config:  4    Tmean: 53.72
+  Config:  8    Tmean: 49.24
+  Config:  7    Tmean: 51.22
+  Config:  5    Tmean: 53.81
+  Config:  6    Tmean: 54.17
+  Config:  9    Tmean: 51.69
+  Config: 10    Tmean: 53.85
+  Config: 11    Tmean: 53.18
+  Config: 12    Tmean: 53.65
+  Config: 13    Tmean: 50.51
+  Config: 14    Tmean: 53.42
+  Config: 15    Tmean: 54.46
+  Config: 16    Tmean: 49.78
+  Config: 17    Tmean: 52.44
+  Config: 20    Tmean: 49.50
+  Config: 19    Tmean: 51.06
+  Config: 18    Tmean: 53.15
+
+
+ >>> BEST CONFIGURATION:  8	 Tmean: 49.24
+
+   > Time (parallel): 215.516 s 
+
+
+  ===================================================================
+    Thermal diffusion - parallel version 
+    npr = 17, groups = 4, processors by group = 4
+    2000 x 1000 points, 4 chips
+    T_ext = 20.0, Tmax_chip = 160.0, T_delta: 0.010, Max_iter: 10000
+  ===================================================================
+
+  Config:  2    Tmean: 52.94
+  Config:  1    Tmean: 52.82
+  Config:  4    Tmean: 53.72
+  Config:  3    Tmean: 53.91
+  Config:  5    Tmean: 53.81
+  Config:  7    Tmean: 51.22
+  Config:  8    Tmean: 49.24
+  Config:  6    Tmean: 54.17
+  Config:  9    Tmean: 51.69
+  Config: 10    Tmean: 53.85
+  Config: 11    Tmean: 53.18
+  Config: 12    Tmean: 53.65
+  Config: 13    Tmean: 50.51
+  Config: 14    Tmean: 53.42
+  Config: 16    Tmean: 49.78
+  Config: 17    Tmean: 52.44
+  Config: 15    Tmean: 54.46
+  Config: 19    Tmean: 51.06
+  Config: 18    Tmean: 53.15
+  Config: 20    Tmean: 49.50
+
+
+ >>> BEST CONFIGURATION:  8	 Tmean: 49.24
+
+   > Time (parallel): 216.225 s 
+
+
+  ===================================================================
+    Thermal diffusion - parallel version 
+    npr = 17, groups = 4, processors by group = 4
+    2000 x 1000 points, 4 chips
+    T_ext = 20.0, Tmax_chip = 160.0, T_delta: 0.010, Max_iter: 10000
+  ===================================================================
+
+  Config:  2    Tmean: 52.94
+  Config:  4    Tmean: 53.72
+  Config:  1    Tmean: 52.82
+  Config:  3    Tmean: 53.91
+  Config:  5    Tmean: 53.81
+  Config:  8    Tmean: 49.24
+  Config:  7    Tmean: 51.22
+  Config:  6    Tmean: 54.17
+  Config:  9    Tmean: 51.69
+  Config: 11    Tmean: 53.18
+  Config: 10    Tmean: 53.85
+  Config: 12    Tmean: 53.65
+  Config: 13    Tmean: 50.51
+  Config: 16    Tmean: 49.78
+  Config: 15    Tmean: 54.46
+  Config: 14    Tmean: 53.42
+  Config: 17    Tmean: 52.44
+  Config: 20    Tmean: 49.50
+  Config: 19    Tmean: 51.06
+  Config: 18    Tmean: 53.15
+
+
+ >>> BEST CONFIGURATION:  8	 Tmean: 49.24
+
+   > Time (parallel): 211.093 s 
+
+> T 17 procesos grupos de 8
+
+  ===================================================================
+    Thermal diffusion - parallel version 
+    npr = 17, groups = 2, processors by group = 8
+    2000 x 1000 points, 4 chips
+    T_ext = 20.0, Tmax_chip = 160.0, T_delta: 0.010, Max_iter: 10000
+  ===================================================================
+
+  Config:  2    Tmean: 52.94
+  Config:  1    Tmean: 52.82
+  Config:  3    Tmean: 53.91
+  Config:  4    Tmean: 53.72
+  Config:  5    Tmean: 53.81
+  Config:  6    Tmean: 54.17
+  Config:  7    Tmean: 51.22
+  Config:  8    Tmean: 49.24
+  Config:  9    Tmean: 51.69
+  Config: 10    Tmean: 53.85
+  Config: 11    Tmean: 53.18
+  Config: 13    Tmean: 50.51
+  Config: 12    Tmean: 53.65
+  Config: 14    Tmean: 53.42
+  Config: 16    Tmean: 49.78
+  Config: 15    Tmean: 54.46
+  Config: 17    Tmean: 52.44
+  Config: 18    Tmean: 53.15
+  Config: 19    Tmean: 51.06
+  Config: 20    Tmean: 49.50
+
+
+ >>> BEST CONFIGURATION:  8	 Tmean: 49.24
+
+   > Time (parallel): 207.232 s 
+
+
+  ===================================================================
+    Thermal diffusion - parallel version 
+    npr = 17, groups = 2, processors by group = 8
+    2000 x 1000 points, 4 chips
+    T_ext = 20.0, Tmax_chip = 160.0, T_delta: 0.010, Max_iter: 10000
+  ===================================================================
+
+  Config:  2    Tmean: 52.94
+  Config:  1    Tmean: 52.82
+  Config:  3    Tmean: 53.91
+  Config:  4    Tmean: 53.72
+  Config:  5    Tmean: 53.81
+  Config:  6    Tmean: 54.17
+  Config:  7    Tmean: 51.22
+  Config:  8    Tmean: 49.24
+  Config:  9    Tmean: 51.69
+  Config: 10    Tmean: 53.85
+  Config: 11    Tmean: 53.18
+  Config: 13    Tmean: 50.51
+  Config: 12    Tmean: 53.65
+  Config: 14    Tmean: 53.42
+  Config: 16    Tmean: 49.78
+  Config: 15    Tmean: 54.46
+  Config: 17    Tmean: 52.44
+  Config: 19    Tmean: 51.06
+  Config: 20    Tmean: 49.50
+  Config: 18    Tmean: 53.15
+
+
+ >>> BEST CONFIGURATION:  8	 Tmean: 49.24
+
+   > Time (parallel): 224.701 s 
+
+
+  ===================================================================
+    Thermal diffusion - parallel version 
+    npr = 17, groups = 2, processors by group = 8
+    2000 x 1000 points, 4 chips
+    T_ext = 20.0, Tmax_chip = 160.0, T_delta: 0.010, Max_iter: 10000
+  ===================================================================
+
+  Config:  2    Tmean: 52.94
+  Config:  1    Tmean: 52.82
+  Config:  3    Tmean: 53.91
+  Config:  4    Tmean: 53.72
+  Config:  5    Tmean: 53.81
+  Config:  6    Tmean: 54.17
+  Config:  7    Tmean: 51.22
+  Config:  8    Tmean: 49.24
+  Config:  9    Tmean: 51.69
+  Config: 10    Tmean: 53.85
+  Config: 11    Tmean: 53.18
+  Config: 13    Tmean: 50.51
+  Config: 12    Tmean: 53.65
+  Config: 14    Tmean: 53.42
+  Config: 15    Tmean: 54.46
+  Config: 16    Tmean: 49.78
+  Config: 17    Tmean: 52.44
+  Config: 18    Tmean: 53.15
+  Config: 19    Tmean: 51.06
+  Config: 20    Tmean: 49.50
+
+
+ >>> BEST CONFIGURATION:  8	 Tmean: 49.24
+
+   > Time (parallel): 198.675 s 
+
+> T 65 procesos grupos de 4
+
+  ===================================================================
+    Thermal diffusion - parallel version 
+    npr = 65, groups = 16, processors by group = 4
+    2000 x 1000 points, 4 chips
+    T_ext = 20.0, Tmax_chip = 160.0, T_delta: 0.010, Max_iter: 10000
+  ===================================================================
+
+  Config: 16    Tmean: 49.78
+  Config:  8    Tmean: 49.24
+  Config: 11    Tmean: 53.18
+  Config:  7    Tmean: 51.22
+  Config:  9    Tmean: 51.69
+  Config: 13    Tmean: 50.51
+  Config:  6    Tmean: 54.17
+  Config: 12    Tmean: 53.65
+  Config:  2    Tmean: 52.94
+  Config: 10    Tmean: 53.85
+  Config:  3    Tmean: 53.91
+  Config: 14    Tmean: 53.42
+  Config:  5    Tmean: 53.81
+  Config:  1    Tmean: 52.82
+  Config: 15    Tmean: 54.46
+  Config:  4    Tmean: 53.72
+  Config: 19    Tmean: 51.06
+  Config: 20    Tmean: 49.50
+  Config: 17    Tmean: 52.44
+  Config: 18    Tmean: 53.15
+
+
+ >>> BEST CONFIGURATION:  8	 Tmean: 49.24
+
+   > Time (parallel): 84.158 s 
+
+
+  ===================================================================
+    Thermal diffusion - parallel version 
+    npr = 65, groups = 16, processors by group = 4
+    2000 x 1000 points, 4 chips
+    T_ext = 20.0, Tmax_chip = 160.0, T_delta: 0.010, Max_iter: 10000
+  ===================================================================
+
+  Config: 16    Tmean: 49.78
+  Config:  8    Tmean: 49.24
+  Config:  9    Tmean: 51.69
+  Config:  7    Tmean: 51.22
+  Config: 14    Tmean: 53.42
+  Config: 13    Tmean: 50.51
+  Config:  2    Tmean: 52.94
+  Config:  5    Tmean: 53.81
+  Config: 11    Tmean: 53.18
+  Config:  3    Tmean: 53.91
+  Config: 10    Tmean: 53.85
+  Config: 15    Tmean: 54.46
+  Config: 12    Tmean: 53.65
+  Config:  6    Tmean: 54.17
+  Config:  1    Tmean: 52.82
+  Config:  4    Tmean: 53.72
+  Config: 17    Tmean: 52.44
+  Config: 20    Tmean: 49.50
+  Config: 18    Tmean: 53.15
+  Config: 19    Tmean: 51.06
+
+
+ >>> BEST CONFIGURATION:  8	 Tmean: 49.24
+
+   > Time (parallel): 82.156 s 
+
+
+  ===================================================================
+    Thermal diffusion - parallel version 
+    npr = 65, groups = 16, processors by group = 4
+    2000 x 1000 points, 4 chips
+    T_ext = 20.0, Tmax_chip = 160.0, T_delta: 0.010, Max_iter: 10000
+  ===================================================================
+
+  Config: 16    Tmean: 49.78
+  Config: 13    Tmean: 50.51
+  Config:  8    Tmean: 49.24
+  Config: 14    Tmean: 53.42
+  Config:  7    Tmean: 51.22
+  Config:  2    Tmean: 52.94
+  Config:  9    Tmean: 51.69
+  Config: 11    Tmean: 53.18
+  Config:  6    Tmean: 54.17
+  Config: 10    Tmean: 53.85
+  Config:  1    Tmean: 52.82
+  Config: 12    Tmean: 53.65
+  Config:  5    Tmean: 53.81
+  Config:  3    Tmean: 53.91
+  Config: 15    Tmean: 54.46
+  Config: 20    Tmean: 49.50
+  Config: 19    Tmean: 51.06
+  Config: 17    Tmean: 52.44
+  Config: 18    Tmean: 53.15
+  Config:  4    Tmean: 53.72
+
+
+ >>> BEST CONFIGURATION:  8	 Tmean: 49.24
+
+   > Time (parallel): 84.656 s 
+
+> T 65 procesos grupos de 8
+
+  ===================================================================
+    Thermal diffusion - parallel version 
+    npr = 65, groups = 8, processors by group = 8
+    2000 x 1000 points, 4 chips
+    T_ext = 20.0, Tmax_chip = 160.0, T_delta: 0.010, Max_iter: 10000
+  ===================================================================
+
+  Config:  8    Tmean: 49.24
+  Config:  7    Tmean: 51.22
+  Config:  2    Tmean: 52.94
+  Config:  1    Tmean: 52.82
+  Config:  6    Tmean: 54.17
+  Config:  3    Tmean: 53.91
+  Config:  9    Tmean: 51.69
+  Config:  5    Tmean: 53.81
+  Config: 10    Tmean: 53.85
+  Config: 13    Tmean: 50.51
+  Config: 11    Tmean: 53.18
+  Config:  4    Tmean: 53.72
+  Config: 16    Tmean: 49.78
+  Config: 14    Tmean: 53.42
+  Config: 12    Tmean: 53.65
+  Config: 19    Tmean: 51.06
+  Config: 17    Tmean: 52.44
+  Config: 15    Tmean: 54.46
+  Config: 18    Tmean: 53.15
+  Config: 20    Tmean: 49.50
+
+
+ >>> BEST CONFIGURATION:  8	 Tmean: 49.24
+
+   > Time (parallel): 60.230 s 
+
+
+  ===================================================================
+    Thermal diffusion - parallel version 
+    npr = 65, groups = 8, processors by group = 8
+    2000 x 1000 points, 4 chips
+    T_ext = 20.0, Tmax_chip = 160.0, T_delta: 0.010, Max_iter: 10000
+  ===================================================================
+
+  Config:  8    Tmean: 49.24
+  Config:  7    Tmean: 51.22
+  Config:  1    Tmean: 52.82
+  Config:  5    Tmean: 53.81
+  Config:  6    Tmean: 54.17
+  Config:  3    Tmean: 53.91
+  Config:  2    Tmean: 52.94
+  Config:  9    Tmean: 51.69
+  Config:  4    Tmean: 53.72
+  Config: 10    Tmean: 53.85
+  Config: 13    Tmean: 50.51
+  Config: 16    Tmean: 49.78
+  Config: 12    Tmean: 53.65
+  Config: 14    Tmean: 53.42
+  Config: 11    Tmean: 53.18
+  Config: 17    Tmean: 52.44
+  Config: 15    Tmean: 54.46
+  Config: 19    Tmean: 51.06
+  Config: 18    Tmean: 53.15
+  Config: 20    Tmean: 49.50
+
+
+ >>> BEST CONFIGURATION:  8	 Tmean: 49.24
+
+   > Time (parallel): 57.257 s 
+
+
+  ===================================================================
+    Thermal diffusion - parallel version 
+    npr = 65, groups = 8, processors by group = 8
+    2000 x 1000 points, 4 chips
+    T_ext = 20.0, Tmax_chip = 160.0, T_delta: 0.010, Max_iter: 10000
+  ===================================================================
+
+  Config:  8    Tmean: 49.24
+  Config:  7    Tmean: 51.22
+  Config:  2    Tmean: 52.94
+  Config:  5    Tmean: 53.81
+  Config:  1    Tmean: 52.82
+  Config:  6    Tmean: 54.17
+  Config:  3    Tmean: 53.91
+  Config:  9    Tmean: 51.69
+  Config: 11    Tmean: 53.18
+  Config: 10    Tmean: 53.85
+  Config: 14    Tmean: 53.42
+  Config: 12    Tmean: 53.65
+  Config: 13    Tmean: 50.51
+  Config: 16    Tmean: 49.78
+  Config: 15    Tmean: 54.46
+  Config:  4    Tmean: 53.72
+  Config: 17    Tmean: 52.44
+  Config: 19    Tmean: 51.06
+  Config: 20    Tmean: 49.50
+  Config: 18    Tmean: 53.15
+
+
+ >>> BEST CONFIGURATION:  8	 Tmean: 49.24
+
+   > Time (parallel): 61.010 s 
+
+> T 65 procesos grupos de 16
+
+  ===================================================================
+    Thermal diffusion - parallel version 
+    npr = 65, groups = 4, processors by group = 16
+    2000 x 1000 points, 4 chips
+    T_ext = 20.0, Tmax_chip = 160.0, T_delta: 0.010, Max_iter: 10000
+  ===================================================================
+
+  Config:  2    Tmean: 52.94
+  Config:  1    Tmean: 52.82
+  Config:  3    Tmean: 53.91
+  Config:  4    Tmean: 53.72
+  Config:  5    Tmean: 53.81
+  Config:  7    Tmean: 51.22
+  Config:  8    Tmean: 49.24
+  Config:  9    Tmean: 51.69
+  Config: 11    Tmean: 53.18
+  Config:  6    Tmean: 54.17
+  Config: 13    Tmean: 50.51
+  Config: 12    Tmean: 53.65
+  Config: 15    Tmean: 54.46
+  Config: 10    Tmean: 53.85
+  Config: 16    Tmean: 49.78
+  Config: 14    Tmean: 53.42
+  Config: 19    Tmean: 51.06
+  Config: 17    Tmean: 52.44
+  Config: 18    Tmean: 53.15
+  Config: 20    Tmean: 49.50
+
+
+ >>> BEST CONFIGURATION:  8	 Tmean: 49.24
+
+   > Time (parallel): 92.109 s 
+
+
+  ===================================================================
+    Thermal diffusion - parallel version 
+    npr = 65, groups = 4, processors by group = 16
+    2000 x 1000 points, 4 chips
+    T_ext = 20.0, Tmax_chip = 160.0, T_delta: 0.010, Max_iter: 10000
+  ===================================================================
+
+  Config:  2    Tmean: 52.94
+  Config:  3    Tmean: 53.91
+  Config:  4    Tmean: 53.72
+  Config:  1    Tmean: 52.82
+  Config:  5    Tmean: 53.81
+  Config:  7    Tmean: 51.22
+  Config:  6    Tmean: 54.17
+  Config:  8    Tmean: 49.24
+  Config:  9    Tmean: 51.69
+  Config: 10    Tmean: 53.85
+  Config: 11    Tmean: 53.18
+  Config: 13    Tmean: 50.51
+  Config: 12    Tmean: 53.65
+  Config: 14    Tmean: 53.42
+  Config: 16    Tmean: 49.78
+  Config: 19    Tmean: 51.06
+  Config: 18    Tmean: 53.15
+  Config: 17    Tmean: 52.44
+  Config: 20    Tmean: 49.50
+  Config: 15    Tmean: 54.46
+
+
+ >>> BEST CONFIGURATION:  8	 Tmean: 49.24
+
+   > Time (parallel): 75.678 s 
+
+
+  ===================================================================
+    Thermal diffusion - parallel version 
+    npr = 65, groups = 4, processors by group = 16
+    2000 x 1000 points, 4 chips
+    T_ext = 20.0, Tmax_chip = 160.0, T_delta: 0.010, Max_iter: 10000
+  ===================================================================
+
+  Config:  1    Tmean: 52.82
+  Config:  3    Tmean: 53.91
+  Config:  2    Tmean: 52.94
+  Config:  4    Tmean: 53.72
+  Config:  5    Tmean: 53.81
+  Config:  7    Tmean: 51.22
+  Config:  8    Tmean: 49.24
+  Config:  9    Tmean: 51.69
+  Config:  6    Tmean: 54.17
+  Config: 10    Tmean: 53.85
+  Config: 11    Tmean: 53.18
+  Config: 13    Tmean: 50.51
+  Config: 12    Tmean: 53.65
+  Config: 14    Tmean: 53.42
+  Config: 16    Tmean: 49.78
+  Config: 15    Tmean: 54.46
+  Config: 17    Tmean: 52.44
+  Config: 18    Tmean: 53.15
+  Config: 19    Tmean: 51.06
+  Config: 20    Tmean: 49.50
+
+
+ >>> BEST CONFIGURATION:  8	 Tmean: 49.24
+
+   > Time (parallel): 62.507 s 
+
+> T 112 procesos grupos de 16
+
+  ===================================================================
+    Thermal diffusion - parallel version 
+    npr = 113, groups = 7, processors by group = 16
+    2000 x 1000 points, 4 chips
+    T_ext = 20.0, Tmax_chip = 160.0, T_delta: 0.010, Max_iter: 10000
+  ===================================================================
+
+  Config:  7    Tmean: 51.22
+  Config:  5    Tmean: 53.81
+  Config:  3    Tmean: 53.91
+  Config:  1    Tmean: 52.82
+  Config:  2    Tmean: 52.94
+  Config:  4    Tmean: 53.72
+  Config:  9    Tmean: 51.69
+  Config:  6    Tmean: 54.17
+  Config:  8    Tmean: 49.24
+  Config: 11    Tmean: 53.18
+  Config: 13    Tmean: 50.51
+  Config: 10    Tmean: 53.85
+  Config: 12    Tmean: 53.65
+  Config: 16    Tmean: 49.78
+  Config: 15    Tmean: 54.46
+  Config: 17    Tmean: 52.44
+  Config: 20    Tmean: 49.50
+  Config: 19    Tmean: 51.06
+  Config: 14    Tmean: 53.42
+  Config: 18    Tmean: 53.15
+
+
+ >>> BEST CONFIGURATION:  8	 Tmean: 49.24
+
+   > Time (parallel): 88.852 s 
+
+
+  ===================================================================
+    Thermal diffusion - parallel version 
+    npr = 113, groups = 7, processors by group = 16
+    2000 x 1000 points, 4 chips
+    T_ext = 20.0, Tmax_chip = 160.0, T_delta: 0.010, Max_iter: 10000
+  ===================================================================
+
+  Config:  7    Tmean: 51.22
+  Config:  2    Tmean: 52.94
+  Config:  5    Tmean: 53.81
+  Config:  6    Tmean: 54.17
+  Config:  8    Tmean: 49.24
+  Config:  1    Tmean: 52.82
+  Config:  3    Tmean: 53.91
+  Config:  9    Tmean: 51.69
+  Config: 10    Tmean: 53.85
+  Config: 13    Tmean: 50.51
+  Config: 12    Tmean: 53.65
+  Config: 16    Tmean: 49.78
+  Config: 14    Tmean: 53.42
+  Config:  4    Tmean: 53.72
+  Config: 11    Tmean: 53.18
+  Config: 17    Tmean: 52.44
+  Config: 20    Tmean: 49.50
+  Config: 15    Tmean: 54.46
+  Config: 19    Tmean: 51.06
+  Config: 18    Tmean: 53.15
+
+
+ >>> BEST CONFIGURATION:  8	 Tmean: 49.24
+
+   > Time (parallel): 86.340 s 
+
+
+  ===================================================================
+    Thermal diffusion - parallel version 
+    npr = 113, groups = 7, processors by group = 16
+    2000 x 1000 points, 4 chips
+    T_ext = 20.0, Tmax_chip = 160.0, T_delta: 0.010, Max_iter: 10000
+  ===================================================================
+
+  Config:  7    Tmean: 51.22
+  Config:  1    Tmean: 52.82
+  Config:  5    Tmean: 53.81
+  Config:  2    Tmean: 52.94
+  Config:  6    Tmean: 54.17
+  Config:  3    Tmean: 53.91
+  Config:  8    Tmean: 49.24
+  Config:  9    Tmean: 51.69
+  Config:  4    Tmean: 53.72
+  Config: 11    Tmean: 53.18
+  Config: 10    Tmean: 53.85
+  Config: 13    Tmean: 50.51
+  Config: 16    Tmean: 49.78
+  Config: 12    Tmean: 53.65
+  Config: 14    Tmean: 53.42
+  Config: 19    Tmean: 51.06
+  Config: 20    Tmean: 49.50
+  Config: 17    Tmean: 52.44
+  Config: 18    Tmean: 53.15
+  Config: 15    Tmean: 54.46
+
+
+ >>> BEST CONFIGURATION:  8	 Tmean: 49.24
+
+   > Time (parallel): 69.139 s 
+
+> T 112 procesos grupos de 28
+
+  ===================================================================
+    Thermal diffusion - parallel version 
+    npr = 113, groups = 4, processors by group = 28
+    2000 x 1000 points, 4 chips
+    T_ext = 20.0, Tmax_chip = 160.0, T_delta: 0.010, Max_iter: 10000
+  ===================================================================
+
+  Config:  1    Tmean: 52.82
+  Config:  2    Tmean: 52.94
+  Config:  4    Tmean: 53.72
+  Config:  3    Tmean: 53.91
+  Config:  5    Tmean: 53.81
+  Config:  6    Tmean: 54.17
+  Config:  7    Tmean: 51.22
+  Config:  9    Tmean: 51.69
+  Config:  8    Tmean: 49.24
+  Config: 10    Tmean: 53.85
+  Config: 13    Tmean: 50.51
+  Config: 11    Tmean: 53.18
+  Config: 12    Tmean: 53.65
+  Config: 14    Tmean: 53.42
+  Config: 16    Tmean: 49.78
+  Config: 17    Tmean: 52.44
+  Config: 15    Tmean: 54.46
+  Config: 18    Tmean: 53.15
+  Config: 19    Tmean: 51.06
+  Config: 20    Tmean: 49.50
+
+
+ >>> BEST CONFIGURATION:  8	 Tmean: 49.24
+
+   > Time (parallel): 178.511 s 
+
+
+  ===================================================================
+    Thermal diffusion - parallel version 
+    npr = 113, groups = 4, processors by group = 28
+    2000 x 1000 points, 4 chips
+    T_ext = 20.0, Tmax_chip = 160.0, T_delta: 0.010, Max_iter: 10000
+  ===================================================================
+
+  Config:  1    Tmean: 52.82
+  Config:  4    Tmean: 53.72
+  Config:  2    Tmean: 52.94
+  Config:  3    Tmean: 53.91
+  Config:  7    Tmean: 51.22
+  Config:  8    Tmean: 49.24
+  Config:  5    Tmean: 53.81
+  Config:  6    Tmean: 54.17
+  Config:  9    Tmean: 51.69
+  Config: 10    Tmean: 53.85
+  Config: 13    Tmean: 50.51
+  Config: 11    Tmean: 53.18
+  Config: 12    Tmean: 53.65
+  Config: 14    Tmean: 53.42
+  Config: 16    Tmean: 49.78
+  Config: 17    Tmean: 52.44
+  Config: 19    Tmean: 51.06
+  Config: 18    Tmean: 53.15
+  Config: 20    Tmean: 49.50
+  Config: 15    Tmean: 54.46
+
+
+ >>> BEST CONFIGURATION:  8	 Tmean: 49.24
+
+   > Time (parallel): 179.466 s 
+
+
+  ===================================================================
+    Thermal diffusion - parallel version 
+    npr = 113, groups = 4, processors by group = 28
+    2000 x 1000 points, 4 chips
+    T_ext = 20.0, Tmax_chip = 160.0, T_delta: 0.010, Max_iter: 10000
+  ===================================================================
+
+  Config:  2    Tmean: 52.94
+  Config:  1    Tmean: 52.82
+  Config:  3    Tmean: 53.91
+  Config:  4    Tmean: 53.72
+  Config:  7    Tmean: 51.22
+  Config:  5    Tmean: 53.81
+  Config:  8    Tmean: 49.24
+  Config:  6    Tmean: 54.17
+  Config:  9    Tmean: 51.69
+  Config: 10    Tmean: 53.85
+  Config: 11    Tmean: 53.18
+  Config: 13    Tmean: 50.51
+  Config: 16    Tmean: 49.78
+  Config: 12    Tmean: 53.65
+  Config: 14    Tmean: 53.42
+  Config: 15    Tmean: 54.46
+  Config: 17    Tmean: 52.44
+  Config: 18    Tmean: 53.15
+  Config: 19    Tmean: 51.06
+  Config: 20    Tmean: 49.50
+
+
+ >>> BEST CONFIGURATION:  8	 Tmean: 49.24
+
+   > Time (parallel): 162.112 s 
+

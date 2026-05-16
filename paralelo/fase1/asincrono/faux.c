@@ -118,3 +118,4 @@ void results (struct info_param param, struct info_results *BT, char *finput)
 
   fclose (fd);
 }
+

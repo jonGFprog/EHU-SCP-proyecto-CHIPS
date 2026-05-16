@@ -1,0 +1,36 @@
+
+  ===================================================================
+    Thermal diffusion - SERIAL version 
+    2000 x 1000 points, 4 chips
+    T_ext = 20.0, Tmax_chip = 160.0, T_delta: 0.010, Max_iter: 10000
+  ===================================================================
+
+Iter (ser): 4480	  Config:  1    Tmean: 52.82
+Iter (ser): 4080	  Config:  2    Tmean: 52.94
+Iter (ser): 5000	  Config:  3    Tmean: 53.91
+Iter (ser): 5040	  Config:  4    Tmean: 53.72
+Iter (ser): 4480	  Config:  5    Tmean: 53.81
+Iter (ser): 4590	  Config:  6    Tmean: 54.17
+Iter (ser): 3310	  Config:  7    Tmean: 51.22
+Iter (ser): 3100	  Config:  8    Tmean: 49.24
+Iter (ser): 3560	  Config:  9    Tmean: 51.69
+Iter (ser): 4480	  Config: 10    Tmean: 53.85
+Iter (ser): 4170	  Config: 11    Tmean: 53.18
+Iter (ser): 4740	  Config: 12    Tmean: 53.65
+Iter (ser): 3580	  Config: 13    Tmean: 50.51
+Iter (ser): 4290	  Config: 14    Tmean: 53.42
+Iter (ser): 4860	  Config: 15    Tmean: 54.46
+Iter (ser): 2550	  Config: 16    Tmean: 49.78
+Iter (ser): 3780	  Config: 17    Tmean: 52.44
+Iter (ser): 4370	  Config: 18    Tmean: 53.15
+Iter (ser): 3220	  Config: 19    Tmean: 51.06
+Iter (ser): 2860	  Config: 20    Tmean: 49.50
+
+
+ >>> Best configuration:  8    Tmean: 49.24
+   > Time (serial): 3474.701 s 
+
+
+
+ >>> BEST CONFIGURATION:  8	 Tmean: 49.24
+
