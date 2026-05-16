@@ -1,7 +1,7 @@
 # 1. Variables de compilador y banderas
 CC       = mpicc
 CFLAGS   = -Wall -O2
-TARGET   = mi_proyecto
+TARGET   = bin
 
 # 2. Lista de archivos fuente y objetos
 SRCS     = faux.c heat.c diffusion.c
