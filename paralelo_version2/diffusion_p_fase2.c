@@ -75,10 +75,10 @@ double calculate_Tmean (struct info_param param, float *grid, float *grid_chips,
     // heat injection and air cooling
     thermal_update (param, grid, grid_chips,tam_loc);
 
-    // 1. envia las filas pares envian su ultima fila a las filas impares las filas impares sus
-    //    primeras filas a las pares
-    // 2. las pares envian sus primeras filas a las impares
-    //    las impares sus ultimas filas a la pares.
+    // envia las filas pares envian su ultima fila a las filas impares las filas impares sus
+    // primeras filas a las pares
+    // las pares envian sus primeras filas a las impares
+    // las impares sus ultimas filas a la pares.
     //pares a sus siguientes
     MPI_Request reqs[4];
     num_reqs = 0;

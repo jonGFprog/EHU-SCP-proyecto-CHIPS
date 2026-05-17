@@ -148,6 +148,7 @@ int main (int argc, char *argv[])
             chip_coord[i] = malloc(2 * param.nchip * sizeof(int));
         }
     }
+    t0 = MPI_Wtime ();
 
     MPI_Bcast(chips, param.nchip * sizeof(struct info_chips), MPI_BYTE, 0, MPI_COMM_WORLD);
 
@@ -156,7 +157,6 @@ int main (int argc, char *argv[])
         MPI_Bcast(chip_coord[i], 2 * param.nchip, MPI_INT, 0, MPI_COMM_WORLD);
     }
 
-    t0 = MPI_Wtime ();
 
 
     if (pid == 0) {

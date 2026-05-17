@@ -1,27 +1,17 @@
-/* heat_s.c
+/* heat_fase2_p.c
 
-         Difusion del calor en 2 dimensiones      Version en serie
+     Difusión del calor en 2 dimensiones - Versión Paralela (Fase 2)
+     Arquitectura: Master-Worker Asíncrona Multinivel (Afín al Hardware)
 
-         Se analizan las posiciones de los chips en una tarjeta, para conseguir la temperatura minima
-         de la tarjeta. Se utiliza el metodo de tipo Poisson, y la tarjeta se discretiza en una rejilla
-         de puntos 2D.
+     Entrada: archivo de tarjeta y Tamaño del Grupo (P)
+     Salida: la mejor configuración y la temperatura media
 
-         Entrada: card > la definicion de la tarjeta y las configuraciones a simular
-         Salida: la mejor configuracion y la temperatura media
-	      card_s.chips: situacion termica inicial
-            card_s.res: la situacion termica final
-
-         defines.h: definiciones de ciertas variables y estructuras de datos
-
-         Compilar con estos dos ficheros:
-           diffusion.c: insertar calor, difundir y calcular la temperatura media hasta que se estabilice
-           faux.c: ciertas funciones auxiliares
-
-************************************************************************************************/
+********************************************************************************/
 
 #include <stdio.h>
 #include <values.h>
 #include <time.h>
+#include <stdlib.h>
 #include <mpi.h>
 
 #include "defines.h"
@@ -64,11 +54,11 @@ int main (int argc, char *argv[])
     int pid, npr;
     double t0, t1, tej;
     struct info_param param;
-    MPI_Status info;
     struct info_chips *chips;
     int **chip_coord;
     struct info_results BT;
     const int N_VECINOS = 2;
+    int P, ngroups, n_workers;
 
     MPI_Init (&argc, &argv);
     MPI_Comm_size (MPI_COMM_WORLD, &npr);
@@ -79,22 +69,31 @@ int main (int argc, char *argv[])
     /* 1. LECTURA Y DISTRIBUCIÓN DE DATOS INICIALES                          */
     /* ===================================================================== */
 
-    int ngroups;
+
+    if (argc != 3) {
+        if (pid == 0) printf ("\n\nERROR: Uso: %s <archivo_tarjeta> <tam_grupo_P>\n\n", argv[0]);
+        MPI_Finalize();
+        return -1;
+    }
+
+    P = atoi(argv[2]);
+    n_workers = npr - 1;
 
     if (pid == 0) {
-        if (argc != 3) {
-            printf ("\n\nERROR: needs a card description file and the number of groups \n\n");
+        if (n_workers <= 0 || n_workers % P != 0) {
+            printf ("\n\nERROR: Los %d trabajadores no se pueden dividir en grupos exactos de %d procesos.\n", n_workers, P);
+            printf ("Fórmula correcta: Procesos totales = 1 Manager + (N_Grupos * %d)\n\n", P);
             MPI_Abort(MPI_COMM_WORLD, -1);
         }
 
         read_data (argv[1], &param, &chips, &chip_coord);
-        ngroups = atoi(argv[2]);
+        ngroups = n_workers / P;
 
         printf ("\n  ===================================================================");
         printf ("\n    Thermal diffusion - parallel version ");
         printf ("\n    %d x %d points, %d chips", RSIZE*param.scale, CSIZE*param.scale, param.nchip);
         printf ("\n    T_ext = %1.1f, Tmax_chip = %1.1f, T_delta: %1.3f, Max_iter: %d", param.t_ext, param.tmax_chip, param.t_delta, param.max_iter);
-        printf ("\n    %d groups ", ngroups);
+        printf ("\n    %d groups of %d workers", ngroups, P);
         printf ("\n  ===================================================================\n\n");
     }
 
@@ -104,23 +103,23 @@ int main (int argc, char *argv[])
 
 
     /* ===================================================================== */
-    /* 2. CREACIÓN DE COMUNICADORES (TOPOLOGÍA EXPLÍCITA)                    */
+    /* 2. CREACIÓN DE COMUNICADORES (TOPOLOGÍA AFÍN AL HARDWARE)             */
     /* ===================================================================== */
 
     MPI_Comm grupo, lideres;
     int color, pid_lideres, pid_grupo, npr_grupo;
 
-    /* Comunicador de Grupos de Trabajo */
+    /* Comunicador de Grupos de Trabajo (Reparto por Bloques Contiguos) */
     if (pid == 0) color = MPI_UNDEFINED;
-    else color = pid % ngroups;
+    else color = (pid - 1) / P;
 
     MPI_Comm_split(MPI_COMM_WORLD, color, 0, &grupo);
 
-    /* Comunicador exclusivo de Líderes (Manager + Jefes) */
-    if (pid < ngroups + 1) color = 0;
+    /* Comunicador exclusivo de Líderes (Manager + Jefes de Grupo) */
+    if (pid == 0 || (pid - 1) % P == 0) color = 0;
     else color = MPI_UNDEFINED;
 
-    MPI_Comm_split(MPI_COMM_WORLD, color, 0, &lideres);
+    MPI_Comm_split(MPI_COMM_WORLD, color, pid, &lideres);
 
     /* Asignación de rangos locales */
     if (pid == 0) {
@@ -131,8 +130,11 @@ int main (int argc, char *argv[])
         MPI_Comm_size(grupo, &npr_grupo);
     }
 
-    if (pid < ngroups + 1) MPI_Comm_rank(lideres, &pid_lideres);
-    else pid_lideres = -1;
+    if (color == 0) {
+        MPI_Comm_rank(lideres, &pid_lideres);
+    } else {
+        pid_lideres = -1;
+    }
 
 
     /* ===================================================================== */
@@ -143,15 +145,14 @@ int main (int argc, char *argv[])
     int *tam, *dist;
     float *grid, *grid_chips;
     float *grid_local, *grid_chips_local, *grid_aux_local;
-    int i;
-
-    /* Cálculo de carga de trabajo */
-    base = (NROW - 2) / npr_grupo;
-    resto = (NROW - 2) % npr_grupo;
-    tam_loc = base + (pid_grupo < resto ? 1 : 0);
+    int i, k;
 
     /* Memoria para Trabajadores */
     if (pid != 0) {
+        base = (NROW - 2) / npr_grupo;
+        resto = (NROW - 2) % npr_grupo;
+        tam_loc = base + (pid_grupo < resto ? 1 : 0);
+
         grid_local = malloc((tam_loc + N_VECINOS) * NCOL * sizeof(float));
         grid_chips_local = malloc((tam_loc + N_VECINOS) * NCOL * sizeof(float));
         grid_aux_local = malloc((tam_loc + N_VECINOS) * NCOL * sizeof(float));
@@ -159,9 +160,9 @@ int main (int argc, char *argv[])
         chips = (struct info_chips *) malloc(param.nchip * sizeof(struct info_chips));
     }
 
-    /* Envío exclusivo de configuración de chips por el canal de líderes */
-    if (pid < ngroups + 1) {
-        MPI_Bcast(chips, (sizeof(int)*2 + sizeof(float)) * param.nchip, MPI_CHAR, 0, lideres);
+    if (pid_lideres >= 0) {
+        MPI_Bcast(chips, param.nchip * sizeof(struct info_chips), MPI_BYTE,
+                          0, lideres);
     }
 
     /* Memoria para Jefes de Grupo */
@@ -176,6 +177,13 @@ int main (int argc, char *argv[])
 
         grid = malloc(NROW * NCOL * sizeof(float));
         grid_chips = malloc(NROW * NCOL * sizeof(float));
+
+        /* Limpieza de bordes físicos para no recolectar "basura" de la RAM */
+        for(k = 0; k < NROW * NCOL; k++){
+            grid[k] = param.t_ext;
+            grid_chips[k] = param.t_ext;
+        }
+
         BT.bgrid = malloc(NROW * NCOL * sizeof(float));
         BT.cgrid = malloc(NROW * NCOL * sizeof(float));
         BT.Tmean = MAXDOUBLE;
@@ -189,7 +197,7 @@ int main (int argc, char *argv[])
 
 
     /* ===================================================================== */
-    /* 4. BUCLE PRINCIPAL (ASIGNACIÓN Y CÁLCULO)                             */
+    /* 4. BUCLE PRINCIPAL (ASIGNACIÓN ASÍNCRONA)                             */
     /* ===================================================================== */
 
     char sol = 's';
@@ -197,34 +205,34 @@ int main (int argc, char *argv[])
     int conf;
     MPI_Status status;
 
+    /* Buffer grande para evitar desbordamiento por overhead de MPI_Pack */
     int tam_buf = sizeof(int) * 2 * param.nchip + sizeof(int);
     char buf[tam_buf];
     int pos = 0;
 
     if (pid == 0) {
-        /* LÓGICA DEL MANAGER */
-        MPI_Request req;
+        /* ----------------------- MANAGER ----------------------- */
         for (conf = 0; conf < param.nconf; conf++) {
             MPI_Recv(&sol, 1, MPI_CHAR, MPI_ANY_SOURCE, MPI_ANY_TAG, lideres, &status);
 
-            /* Empaquetamos y enviamos la nueva configuración completa */
             pos = 0;
             MPI_Pack(&conf, 1, MPI_INT, buf, tam_buf, &pos, lideres);
             MPI_Pack(chip_coord[conf], 2 * param.nchip, MPI_INT, buf, tam_buf, &pos, lideres);
             MPI_Send(buf, tam_buf, MPI_PACKED, status.MPI_SOURCE, 19, lideres);
         }
 
-        /* Enviar señal de fin a todos los líderes */
+        /* Señal de fin bloqueante para que no se destruya la variable antes de llegar */
         for (i = 0; i < ngroups; i++) {
-            MPI_Isend(&fin, 1, MPI_INT, i+1, 12, lideres, &req);
+            MPI_Send(&fin, 1, MPI_INT, i+1, 12, lideres);
         }
 
     } else {
-        /* LÓGICA DE TRABAJADORES Y JEFES DE GRUPO */
+        /* ----------------------- WORKERS ----------------------- */
         fin = 0;
         int tag = -1;
         int chip_coord_loc[2 * param.nchip];
         double Tmean;
+        MPI_Status info;
 
         while (!fin) {
             pos = 0;
@@ -261,11 +269,11 @@ int main (int argc, char *argv[])
                 MPI_Scatterv(grid_chips, tam, dist, MPI_FLOAT,
                             &grid_chips_local[1 * NCOL], tam_loc * NCOL, MPI_FLOAT, 0, grupo);
 
+                /* Cálculo llamando al subgrupo local (pid_grupo, npr_grupo, grupo) */
                 Tmean = calculate_Tmean (param, grid_local, grid_chips_local, grid_aux_local, tam_loc, pid_grupo, npr_grupo, info, grupo);
 
                 MPI_Gatherv(&grid_local[1 * NCOL], tam_loc * NCOL, MPI_FLOAT, grid, tam, dist, MPI_FLOAT, 0, grupo);
 
-                /* Guardar el mejor resultado local del grupo */
                 if (pid_grupo == 0) {
                     printf("  Config: %2d    Tmean: %1.2f\n", conf + 1, Tmean);
                     results_conf(conf, Tmean, param, grid, grid_chips, &BT);
@@ -278,33 +286,29 @@ int main (int argc, char *argv[])
     /* 5. FASE DE VOTACIÓN Y RECOLECCIÓN DEL GANADOR FINAL                   */
     /* ===================================================================== */
 
-    int tam_bufBT = NROW * NCOL * sizeof(float) * 2 + sizeof(double) + sizeof(int);
-    char bufBT[tam_bufBT];
+    int tam_bufBT =  NROW * NCOL * sizeof(float) * 2 + sizeof(double) + sizeof(int);
+    char *bufBT = malloc(tam_bufBT); // Uso de memoria dinámica para el megabuffer
     pos = 0;
 
     if (pid == 0) {
         double Tmeans[ngroups];
         int min = 0;
 
-        /* 5.1 El Manager recoge las medias de todos los líderes */
         for (i = 0; i < ngroups; i++) {
             MPI_Probe(MPI_ANY_SOURCE, 16, lideres, &status);
             MPI_Recv(&Tmeans[status.MPI_SOURCE - 1], 1, MPI_DOUBLE, status.MPI_SOURCE, 16, lideres, &status);
         }
 
-        /* 5.2 El Manager busca el mínimo (El Ganador) */
         for (i = 1; i < ngroups; i++) {
             if (Tmeans[min] > Tmeans[i]) {
                 min = i;
             }
         }
 
-        /* 5.3 Informar a todos de quién es el ganador */
         for (i = 0; i < ngroups; i++) {
             MPI_Send(&min, 1, MPI_INT, i + 1, 1, lideres);
         }
 
-        /* 5.4 Recibir las matrices grandes empaquetadas del ganador */
         MPI_Recv(bufBT, tam_bufBT, MPI_PACKED, min + 1, 2, lideres, &status);
         MPI_Unpack(bufBT, tam_bufBT, &pos, &BT.conf, 1, MPI_INT, lideres);
         MPI_Unpack(bufBT, tam_bufBT, &pos, &BT.Tmean, 1, MPI_DOUBLE, lideres);
@@ -314,11 +318,9 @@ int main (int argc, char *argv[])
     } else if (pid_lideres > 0) {
         int min;
 
-        /* Enviar mi mejor temperatura al Manager */
         MPI_Send(&BT.Tmean, 1, MPI_DOUBLE, 0, 16, lideres);
         MPI_Recv(&min, 1, MPI_INT, 0, 1, lideres, &status);
 
-        /* Si soy el ganador, empaqueto y envío mis matrices grandes */
         if (min + 1 == pid_lideres) {
             MPI_Pack(&BT.conf, 1, MPI_INT, bufBT, tam_bufBT, &pos, lideres);
             MPI_Pack(&BT.Tmean, 1, MPI_DOUBLE, bufBT, tam_bufBT, &pos, lideres);
@@ -364,6 +366,7 @@ int main (int argc, char *argv[])
         }
     }
 
+    free(bufBT);
     MPI_Finalize();
     return 0;
 }

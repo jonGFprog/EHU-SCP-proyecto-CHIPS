@@ -98,17 +98,14 @@ double calculate_Tmean (struct info_param param, float *grid, float *grid_chips,
     // heat injection and air cooling
     thermal_update (param, grid, grid_chips,tam_loc);
 
-    // 1. envia las filas pares envian su ultima fila a las filas impares las filas impares sus
-    //    primeras filas a las pares
-    // 2. las pares envian sus primeras filas a las impares
-    //    las impares sus ultimas filas a la pares.
-    //pares a sus siguientes
+    // envia las filas pares envian su ultima fila a las filas impares las filas impares sus
+    // primeras filas a las pares
+    // las pares envian sus primeras filas a las impares
+    // las impares sus ultimas filas a la pares.
+    // pares a sus siguientes
     MPI_Request reqs[4];
     num_reqs = 0;
 
-          // PASO A: "Abrir los buzones" (Hacer todos los Irecv primero)
-          // Es buena práctica hacer los Irecv antes que los Isend para que la red
-          // sepa exactamente dónde dejar los datos en cuanto lleguen.
           if (pid > 0) {
               // Recibir del vecino de arriba en la fila fantasma 0
               MPI_Irecv(&grid[0 * NCOL], NCOL, MPI_FLOAT, pid - 1, 0, MPI_COMM_WORLD, &reqs[num_reqs++]);
@@ -118,7 +115,6 @@ double calculate_Tmean (struct info_param param, float *grid, float *grid_chips,
               MPI_Irecv(&grid[(tam_loc + 1) * NCOL], NCOL, MPI_FLOAT, pid + 1, 1, MPI_COMM_WORLD, &reqs[num_reqs++]);
           }
 
-          // PASO B: "Enviar las cartas" (Hacer todos los Isend)
           if (pid > 0) {
               // Enviar mi Fila 1 (real superior) al vecino de arriba
               MPI_Isend(&grid[1 * NCOL], NCOL, MPI_FLOAT, pid - 1, 1, MPI_COMM_WORLD, &reqs[num_reqs++]);
@@ -128,9 +124,8 @@ double calculate_Tmean (struct info_param param, float *grid, float *grid_chips,
               MPI_Isend(&grid[tam_loc * NCOL], NCOL, MPI_FLOAT, pid + 1, 0, MPI_COMM_WORLD, &reqs[num_reqs++]);
           }
 
-          // PASO C: "Sincronización" (El muro de espera)
-          // No podemos calcular la difusión hasta que no estén TODAS las fronteras en su sitio
-          
+          // No calcular la difusión hasta que no estén todos aqui
+
     // thermal diffusion
     Tfull_local = thermal_diffusion(param, grid, grid_aux,tam_loc,num_reqs,reqs,pid,npr);
 
@@ -145,7 +140,7 @@ double calculate_Tmean (struct info_param param, float *grid, float *grid_chips,
             end = 1;
         else Tmean0 = Tmean;
     }
-} // end while
+} //while
   if (pid == 0) printf ("Iter (par): %d\t", niter);
   return (Tmean);
 }
